@@ -12,7 +12,7 @@ public class EnemyAI : MonoBehaviour
 
     [Header("Detección por oído")]
     public float hearingRange = 20f;      // distancia máxima para oír
-    public float hearingThreshold = 0.5f; // intensidad mínima percibida
+    public float hearingThreshold = 0.5f; // intensidad mínima (no atenuada)
     public float investigateTime = 4f;    // cuánto tiempo investiga en la posición del ruido
 
     [Header("Proximidad")]
@@ -29,6 +29,9 @@ public class EnemyAI : MonoBehaviour
     private Vector3 investigatePosition;
     private Coroutine investigateCoroutine;
 
+    // NUEVO: recordamos el último ruido "objetivo" por su ID
+    private int currentTargetNoiseId = -1;
+
     void Start()
     {
         agent = GetComponent<NavMeshAgent>();
@@ -42,7 +45,6 @@ public class EnemyAI : MonoBehaviour
     {
         if (player != null)
         {
-            // Comprobar proximidad letal
             float distToPlayer = Vector3.Distance(transform.position, player.position);
             if (distToPlayer <= proximityKillRange)
             {
@@ -50,19 +52,28 @@ public class EnemyAI : MonoBehaviour
             }
         }
 
-        if (NoiseManager.Instance != null)
+        // Oír SOLO el ruido más reciente dentro de rango/umbral
+        if (NoiseManager.Instance != null &&
+            NoiseManager.Instance.GetMostRecentNoise(transform.position, hearingRange, hearingThreshold, out Vector3 pos, out int noiseId))
         {
-            // escuchar ruidos
-            if (NoiseManager.Instance.GetBestNoise(transform.position, hearingRange, hearingThreshold, out Vector3 pos, out float intensity))
+            // Si este ruido es nuevo (ID distinto), saltamos directo a él
+            if (noiseId != currentTargetNoiseId)
             {
+                currentTargetNoiseId = noiseId;
                 if (state != State.Investigating)
+                {
                     StartInvestigate(pos);
+                }
                 else
-                    investigatePosition = pos; // actualizar objetivo si hay ruido más fuerte
+                {
+                    // Ya estamos investigando: redirigimos inmediatamente al nuevo último ruido
+                    investigatePosition = pos;
+                    agent.SetDestination(investigatePosition);
+                }
             }
         }
 
-        // patrulla
+        // Patrulla
         if (state == State.Patrolling && !agent.pathPending)
         {
             if (agent.remainingDistance <= agent.stoppingDistance)
@@ -97,8 +108,13 @@ public class EnemyAI : MonoBehaviour
 
         while (Time.time - start < investigateTime)
         {
+            // Si ya llegamos cerca del punto actual, paramos la investigación
             if (!agent.pathPending && agent.remainingDistance <= agent.stoppingDistance + 0.5f)
                 break;
+
+            // Nota: si aparece un ruido más reciente, Update() cambiará investigatePosition
+            // y hará agent.SetDestination(investigatePosition). No reiniciamos la corrutina,
+            // solo dejamos que siga hasta que llegue o se agote el tiempo.
             yield return null;
         }
 
@@ -113,7 +129,6 @@ public class EnemyAI : MonoBehaviour
 
         yield return new WaitForSeconds(killDelay);
 
-        // Matar al jugador: desactivar controlador y reiniciar escena
         var cc = player.GetComponent<CharacterController>();
         if (cc != null) cc.enabled = false;
 

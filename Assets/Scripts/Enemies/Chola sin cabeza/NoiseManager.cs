@@ -5,16 +5,22 @@ public class NoiseManager : MonoBehaviour
 {
     public static NoiseManager Instance;
 
-    class Noise
+    private class Noise
     {
         public Vector3 position;
         public float intensity;
         public float time;
-        public Noise(Vector3 p, float i, float t) { position = p; intensity = i; time = t; }
+        public int id;
+        public Noise(Vector3 p, float i, float t, int id)
+        {
+            position = p; intensity = i; time = t; this.id = id;
+        }
     }
 
     private List<Noise> noises = new List<Noise>();
     public float noiseLifetime = 5f;
+
+    private int nextId = 1; // ID incremental para distinguir ruidos en el tiempo
 
     void Awake()
     {
@@ -30,26 +36,29 @@ public class NoiseManager : MonoBehaviour
 
     public void ReportNoise(Vector3 pos, float intensity)
     {
-        noises.Add(new Noise(pos, intensity, Time.time));
+        noises.Add(new Noise(pos, intensity, Time.time, nextId++));
     }
 
-    // Devuelve el ruido más fuerte dentro de maxRange y encima del umbral
-    public bool GetBestNoise(Vector3 listenerPos, float maxRange, float minIntensity, out Vector3 outPos, out float outIntensity)
+    /// <summary>
+    /// Devuelve el ruido MÁS RECIENTE (no el "mejor") dentro de rango y sobre umbral.
+    /// Esto evita que el enemigo siga "el rastro" y vaya directo al último ruido.
+    /// </summary>
+    public bool GetMostRecentNoise(Vector3 listenerPos, float maxRange, float minIntensity, out Vector3 outPos, out int outId)
     {
-        outPos = Vector3.zero; outIntensity = 0f;
-        float bestScore = 0f;
-        foreach (var n in noises)
+        outPos = Vector3.zero;
+        outId = -1;
+
+        // Buscamos desde el más nuevo al más viejo
+        for (int i = noises.Count - 1; i >= 0; i--)
         {
-            float dist = Vector3.Distance(listenerPos, n.position);
-            if (dist > maxRange) continue;
-            float score = n.intensity / (1f + dist); // intensidad atenuada por distancia
-            if (score > bestScore && n.intensity >= minIntensity)
-            {
-                bestScore = score;
-                outPos = n.position;
-                outIntensity = n.intensity;
-            }
+            var n = noises[i];
+            if (n.intensity < minIntensity) continue;
+            if (Vector3.Distance(listenerPos, n.position) > maxRange) continue;
+
+            outPos = n.position;
+            outId = n.id;
+            return true; // El primero que cumpla (por ir de atrás hacia adelante) es el más reciente
         }
-        return bestScore > 0f;
+        return false;
     }
 }
