@@ -1,63 +1,125 @@
+﻿using System.Linq;
 using UnityEngine;
 
 public class FlashlightController : MonoBehaviour
 {
-    [Header("Configuraci�n de la linterna")]
-    public Light flashlight;                // Luz tipo Spot
-    public float detectionRange = 20f;      // Alcance de la linterna
-    public LayerMask enemyLayer;            // Capa de los enemigos
+    [Header("Configuración de la linterna")]
+    public Light flashlight;                 // Spot light
+    public float detectionRange = 20f;       // Alcance de la linterna
+    public LayerMask enemyLayer;             // Capa de enemigos (incluye Silbón)
+    [Tooltip("Capas que bloquean la luz (NO incluyas la capa Enemy aquí)")]
+    public LayerMask obstacleMask = ~0;      // Suelo/paredes/escenario
+    [Tooltip("Raíz del player para ignorar sus colliders (ej: objeto con CharacterController)")]
+    public Transform playerRoot;             // Arrastra el root del jugador
 
-    private void Start()
+    [Header("Input")]
+    public KeyCode toggleKey = KeyCode.Mouse0;
+
+    [Header("Debug")]
+    public bool debugLogs = false;
+    public bool drawRays = false;
+
+    void Start()
     {
-        if (flashlight != null)
-            flashlight.enabled = false;
+        if (flashlight) flashlight.enabled = false;
+        if (!playerRoot) playerRoot = transform; // fallback
     }
 
-    private void Update()
+    void Update()
     {
-        // Click izquierdo para encender/apagar
-        if (Input.GetMouseButtonDown(0) && flashlight != null)
+        if (flashlight && Input.GetKeyDown(toggleKey))
             flashlight.enabled = !flashlight.enabled;
 
-        // Si est� encendida, verificar enemigos
-        if (flashlight != null && flashlight.enabled)
+        if (flashlight && flashlight.enabled)
             CheckEnemiesInLight();
         else
-            UnfreezeAllEnemies();
+            UnfreezeAllEnemies(); // Solo afecta a EnemyBehavior
     }
 
-    private void CheckEnemiesInLight()
+    void CheckEnemiesInLight()
     {
-        Vector3 origin = flashlight.transform.position;
-        Vector3 direction = flashlight.transform.forward;
+        if (!flashlight) return;
 
-        Collider[] enemies = Physics.OverlapSphere(origin, detectionRange, enemyLayer);
+        // Salgo un poco del collider del jugador para evitar autocolisión
+        Vector3 origin = flashlight.transform.position + flashlight.transform.forward * 0.1f;
+        Vector3 forward = flashlight.transform.forward;
+        float halfAngle = flashlight.spotAngle * 0.5f;
 
-        foreach (Collider enemy in enemies)
+        // 1) Candidatos por radio (solo enemigos)
+        Collider[] enemies = Physics.OverlapSphere(origin, detectionRange, enemyLayer, QueryTriggerInteraction.Ignore);
+        if (debugLogs) Debug.Log($"[Flashlight] candidatos en radio: {enemies.Length}");
+
+        foreach (var col in enemies)
         {
-            if (enemy == null) continue;
+            if (!col) continue;
 
-            Vector3 dirToEnemy = (enemy.transform.position - origin).normalized;
-            float angle = Vector3.Angle(direction, dirToEnemy);
+            Vector3 toEnemy = col.bounds.center - origin;
+            float dist = toEnemy.magnitude;
+            if (dist > detectionRange) continue;
 
-            bool inLight = false;
-
-            if (angle < flashlight.spotAngle / 2f)
+            // 2) Dentro del cono
+            float ang = Vector3.Angle(forward, toEnemy);
+            if (ang > halfAngle)
             {
-                if (Physics.Raycast(origin, dirToEnemy, out RaycastHit hit, detectionRange))
-                {
-                    if (hit.collider == enemy)
-                        inLight = true;
-                }
+                // Enemigos con EnemyBehavior se "descongelan" al salir del cono
+                var ebOff = col.GetComponent<EnemyBehavior>();
+                if (ebOff) ebOff.Freeze(false);
+                continue;
             }
 
-            enemy.GetComponent<EnemyBehavior>()?.Freeze(inLight);
+            Vector3 dir = toEnemy.normalized;
+
+            // 3) RaycastAll: tomamos el primer impacto real (ignorando colliders del player)
+            int maskAll = obstacleMask | enemyLayer;
+            var hits = Physics.RaycastAll(origin, dir, dist, maskAll, QueryTriggerInteraction.Ignore)
+                               .OrderBy(h => h.distance);
+
+            RaycastHit? firstValid = null;
+            foreach (var h in hits)
+            {
+                if (playerRoot && h.collider.transform.IsChildOf(playerRoot)) continue; // ignora player
+                firstValid = h; break;
+            }
+
+            bool inLight = false;
+            if (firstValid.HasValue)
+            {
+                inLight = (firstValid.Value.collider == col);
+                if (drawRays)
+                    Debug.DrawLine(origin, firstValid.Value.point, inLight ? Color.green : Color.red, 0.05f);
+                if (debugLogs && !inLight)
+                    Debug.Log($"[Flashlight] Bloqueado por: {firstValid.Value.collider.name} (layer {LayerMask.LayerToName(firstValid.Value.collider.gameObject.layer)})");
+            }
+            else
+            {
+                // No golpeó nada antes: vía libre
+                inLight = true;
+                if (drawRays) Debug.DrawLine(origin, col.bounds.center, Color.green, 0.05f);
+            }
+
+            // 4) Aplica efecto según tipo de enemigo
+            var eb = col.GetComponent<EnemyBehavior>();
+            if (eb) eb.Freeze(inLight); // tu lógica original para otros enemigos
+
+            var silbon = col.GetComponent<SilbonAI>();
+            if (silbon && inLight)
+            {
+                if (debugLogs) Debug.Log("[Flashlight] Silbón iluminado → OnLitByFlashlight()");
+                silbon.OnLitByFlashlight(flashlight.transform, 1f);
+            }
         }
     }
 
-    private void UnfreezeAllEnemies()
+    void UnfreezeAllEnemies()
     {
         foreach (EnemyBehavior enemy in FindObjectsOfType<EnemyBehavior>())
             enemy.Freeze(false);
+    }
+
+    void OnDrawGizmosSelected()
+    {
+        if (!flashlight) return;
+        Gizmos.color = new Color(1f, 1f, 0f, 0.15f);
+        Gizmos.DrawWireSphere(flashlight.transform.position, detectionRange);
     }
 }
