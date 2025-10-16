@@ -206,6 +206,8 @@ public class SilbonAI : MonoBehaviour
     bool CanSeePlayer()
     {
         if (!player) return false;
+        var hideSys = player.GetComponent<PlayerHideSystem>();
+        if (hideSys && hideSys.IsHidden) return false;
 
         Vector3 toPlayer = player.position - transform.position;
         float dist = toPlayer.magnitude;
