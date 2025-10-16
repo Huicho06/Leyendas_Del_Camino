@@ -1156,6 +1156,27 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 235435261859021703, guid: 77bd1dc33ec9a2d488443e5fe3d8a8ff, type: 3}
   m_PrefabInstance: {fileID: 2130752481}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &1194075376
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1194075372}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5f58997839c7f194b9541d8269dd0529, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  cameraTransform: {fileID: 0}
+  flashlight: {fileID: 0}
+  noiseEmitter: {fileID: 0}
+  playerMovement: {fileID: 0}
+  interactKey: 101
+  moveDuration: 0.35
+  exitDuration: 0.25
+  freezeInputWhileHidden: 1
+  zeroNoiseWhileHidden: 1
 --- !u!1 &1279647683
 GameObject:
   m_ObjectHideFlags: 0
@@ -1831,7 +1852,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   root: {fileID: 1735920410}
-  promptText: {fileID: 0}
+  entrarText: {fileID: 0}
+  salirText: {fileID: 0}
 --- !u!1 &1843953086
 GameObject:
   m_ObjectHideFlags: 0
@@ -2231,6 +2253,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 6293458064112367192, guid: 77bd1dc33ec9a2d488443e5fe3d8a8ff, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1194075373}
+    - targetCorrespondingSourceObject: {fileID: 6293458064112367192, guid: 77bd1dc33ec9a2d488443e5fe3d8a8ff, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1194075376}
     - targetCorrespondingSourceObject: {fileID: 5640691769806559347, guid: 77bd1dc33ec9a2d488443e5fe3d8a8ff, type: 3}
       insertIndex: 5
       addedObject: {fileID: 1915922967}
