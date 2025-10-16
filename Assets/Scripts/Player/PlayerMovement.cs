@@ -48,13 +48,18 @@ public class PlayerMovement : MonoBehaviour
 
     [Header("Objetos equipables")]
     public GameObject flashlight;
-    public GameObject stonePrefab;  // prefabricado de la piedra
-    public Transform holdPoint;     // punto donde se sostiene la piedra
+    public GameObject stonePrefab;
+    public Transform holdPoint;
 
     [Header("Lanzamiento de piedra")]
     public float minThrowForce = 5f;
     public float maxThrowForce = 20f;
     public float chargeSpeed = 10f;
+
+    // -------------------------
+    // PROPIEDAD PÚBLICA DE SIGILO
+    // -------------------------
+    public bool IsCrouching { get; private set; }
 
     private GameObject currentStone;
     private float currentThrowForce;
@@ -63,7 +68,6 @@ public class PlayerMovement : MonoBehaviour
     private CharacterController controller;
     private Vector3 velocity;
     private bool isGrounded;
-    private bool isCrouching;
     private bool isRunning;
     private float currentSpeed;
     private float stepTimer;
@@ -105,9 +109,6 @@ public class PlayerMovement : MonoBehaviour
         HandleStoneChargeAndThrow();
     }
 
-    // ------------------------------
-    // MOVIMIENTO Y GRAVEDAD
-    // ------------------------------
     void HandleGroundCheck()
     {
         isGrounded = Physics.CheckSphere(groundCheck.position, 0.3f, groundMask);
@@ -122,9 +123,9 @@ public class PlayerMovement : MonoBehaviour
         Vector3 move = transform.right * x + transform.forward * z;
         bool isMoving = move.magnitude > 0.1f;
 
-        isRunning = Input.GetKey(KeyCode.LeftShift) && !isCrouching && isMoving && isGrounded;
+        isRunning = Input.GetKey(KeyCode.LeftShift) && !IsCrouching && isMoving && isGrounded;
 
-        float targetSpeed = isRunning ? runSpeed : (isCrouching ? crouchSpeed : walkSpeed);
+        float targetSpeed = isRunning ? runSpeed : (IsCrouching ? crouchSpeed : walkSpeed);
         currentSpeed = Mathf.Lerp(currentSpeed, targetSpeed, Time.deltaTime * 6f);
 
         if (isMoving)
@@ -133,13 +134,13 @@ public class PlayerMovement : MonoBehaviour
 
     void HandleJump()
     {
-        if (Input.GetButtonDown("Jump") && isGrounded && !isCrouching)
+        if (Input.GetButtonDown("Jump") && isGrounded && !IsCrouching)
         {
             velocity.y = Mathf.Sqrt(jumpForce * -2f * gravity);
             PlaySound(jumpClip);
 
             if (useNoise && noiseEmitter != null)
-                noiseEmitter.EmitStep(false, isCrouching);
+                noiseEmitter.EmitStep(false, IsCrouching);
         }
     }
 
@@ -147,16 +148,16 @@ public class PlayerMovement : MonoBehaviour
     {
         if (Input.GetKeyDown(KeyCode.LeftControl))
         {
-            isCrouching = true;
+            IsCrouching = true;
             PlaySound(crouchClip);
         }
         else if (Input.GetKeyUp(KeyCode.LeftControl))
         {
-            isCrouching = false;
+            IsCrouching = false;
             PlaySound(crouchClip);
         }
 
-        float targetHeight = isCrouching ? crouchHeight : standHeight;
+        float targetHeight = IsCrouching ? crouchHeight : standHeight;
         controller.height = Mathf.Lerp(controller.height, targetHeight, Time.deltaTime * crouchTransitionSpeed);
     }
 
@@ -166,9 +167,6 @@ public class PlayerMovement : MonoBehaviour
         controller.Move(velocity * Time.deltaTime);
     }
 
-    // ------------------------------
-    // FOOTSTEPS
-    // ------------------------------
     void HandleFootsteps()
     {
         float x = Input.GetAxis("Horizontal");
@@ -195,18 +193,14 @@ public class PlayerMovement : MonoBehaviour
             else if (walkClips.Length > 0)
                 clip = walkClips[UnityEngine.Random.Range(0, walkClips.Length)];
 
-
             if (clip != null)
                 PlaySound(clip);
 
             if (useNoise && noiseEmitter != null)
-                noiseEmitter.EmitStep(isRunning, isCrouching);
+                noiseEmitter.EmitStep(isRunning, IsCrouching);
         }
     }
 
-    // ------------------------------
-    // CAMARA / HEAD BOB
-    // ------------------------------
     void HandleCameraEffects()
     {
         if (playerCamera == null) return;
@@ -241,9 +235,6 @@ public class PlayerMovement : MonoBehaviour
             audioSource.PlayOneShot(clip);
     }
 
-    // ------------------------------
-    // EQUIP SWITCH
-    // ------------------------------
     void HandleEquipSwitch()
     {
         if (Input.GetKeyDown(KeyCode.Alpha1))
@@ -254,14 +245,12 @@ public class PlayerMovement : MonoBehaviour
 
     void EquipFlashlight()
     {
-        equippedItem = Equipped.Flashlight;
         if (flashlight != null) flashlight.SetActive(true);
         if (currentStone != null) currentStone.SetActive(false);
     }
 
     void EquipStone()
     {
-        equippedItem = Equipped.Stone;
         if (flashlight != null) flashlight.SetActive(false);
 
         if (currentStone == null && stonePrefab != null)
@@ -274,19 +263,15 @@ public class PlayerMovement : MonoBehaviour
         if (currentStone != null) currentStone.SetActive(true);
     }
 
-    // ------------------------------
-    // LANZAR PIEDRA CON CARGA
-    // ------------------------------
     void HandleStoneChargeAndThrow()
     {
-        if (equippedItem != Equipped.Stone || currentStone == null) return;
+        if (currentStone == null || playerCamera == null) return;
 
         if (Input.GetMouseButton(0))
         {
             currentThrowForce += chargeSpeed * Time.deltaTime;
             currentThrowForce = Mathf.Clamp(currentThrowForce, minThrowForce, maxThrowForce);
 
-            // Mostrar la trayectoria
             if (stoneTrajectory != null)
             {
                 stoneTrajectory.throwForce = currentThrowForce;
@@ -294,28 +279,18 @@ public class PlayerMovement : MonoBehaviour
             }
         }
 
-
         if (Input.GetMouseButtonUp(0))
         {
-            ThrowStone(currentThrowForce);
+            currentStone.transform.SetParent(null);
+            Rigidbody rb = currentStone.GetComponent<Rigidbody>();
+            rb.isKinematic = false;
+            rb.AddForce(playerCamera.transform.forward * currentThrowForce, ForceMode.Impulse);
+
+            currentStone = null;
             currentThrowForce = minThrowForce;
 
-            // Limpiar la trayectoria
             if (stoneTrajectory != null)
                 stoneTrajectory.ClearTrajectory();
         }
-
-    }
-
-    void ThrowStone(float force)
-    {
-        if (currentStone == null) return;
-
-        currentStone.transform.SetParent(null);
-        Rigidbody rb = currentStone.GetComponent<Rigidbody>();
-        rb.isKinematic = false;
-        rb.AddForce(playerCamera.transform.forward * force, ForceMode.Impulse);
-
-        currentStone = null; // ya no sostiene la piedra
     }
 }
