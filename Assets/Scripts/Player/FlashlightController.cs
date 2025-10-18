@@ -61,9 +61,13 @@ public class FlashlightController : MonoBehaviour
             float ang = Vector3.Angle(forward, toEnemy);
             if (ang > halfAngle)
             {
-                // Enemigos con EnemyBehavior se "descongelan" al salir del cono
+                // Enemigos con EnemyBehavior se descongelan o dejan de reaccionar al salir del cono
                 var ebOff = col.GetComponent<EnemyBehavior>();
-                if (ebOff) ebOff.Freeze(false);
+                if (ebOff)
+                {
+                    // ebOff.Freeze(false); // ← Descomenta si usas el sistema de congelar
+                    ebOff.ReactToLight(false); // Deja de retroceder cuando sale del cono
+                }
                 continue;
             }
 
@@ -99,7 +103,11 @@ public class FlashlightController : MonoBehaviour
 
             // 4) Aplica efecto según tipo de enemigo
             var eb = col.GetComponent<EnemyBehavior>();
-            if (eb) eb.Freeze(inLight); // tu lógica original para otros enemigos
+            if (eb)
+            {
+                // eb.Freeze(inLight); // ← Congelación clásica (otros enemigos)
+                eb.ReactToLight(inLight); // Retroceso del Kari Kari
+            }
 
             var silbon = col.GetComponent<SilbonAI>();
             if (silbon && inLight)
@@ -113,7 +121,10 @@ public class FlashlightController : MonoBehaviour
     void UnfreezeAllEnemies()
     {
         foreach (EnemyBehavior enemy in FindObjectsOfType<EnemyBehavior>())
-            enemy.Freeze(false);
+        {
+            // enemy.Freeze(false); // ← Descomenta si usas el sistema clásico
+            enemy.ReactToLight(false); // Deja de retroceder si estaba retrocediendo
+        }
     }
 
     void OnDrawGizmosSelected()
