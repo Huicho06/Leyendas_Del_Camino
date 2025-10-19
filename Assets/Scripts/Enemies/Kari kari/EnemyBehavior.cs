@@ -102,15 +102,23 @@ public class EnemyBehavior : MonoBehaviour
         }
     }
 
-    //public void Freeze(bool state)
-    //{
-    //    isFrozen = state;
-    //    if (state)
-    //    {
-    //        agent.ResetPath();
-    //        StopFootsteps();
-    //    }
-    //}
+    public void Freeze(bool state)
+    {
+        isFrozen = state;
+        if (state)
+        {
+            agent.ResetPath();
+            agent.isStopped = true;
+            StopFootsteps();
+            if (animator) animator.SetBool("Frozen", true);
+        }
+        else
+        {
+            agent.isStopped = false;
+            if (animator) animator.SetBool("Frozen", false);
+        }
+    }
+
 
     public void ReactToLight(bool inLight)
     {
