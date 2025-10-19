@@ -1,4 +1,3 @@
-
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
@@ -30,6 +29,7 @@ public class GeneradorInteractable : MonoBehaviour
     [HideInInspector] public bool jugando = false;
     private bool subiendo = true;
     private Vector2 barraMinMax;
+    [HideInInspector] public bool estaCompletado = false;
 
     void Start()
     {
@@ -37,17 +37,15 @@ public class GeneradorInteractable : MonoBehaviour
         barraMinMax = new Vector2(barra.rect.yMin, barra.rect.yMax);
         ResetJuego();
 
-        // Asegurarse que todas las palancas estén apagadas
         foreach (var palanca in palancas)
             if (palanca != null)
-                palanca.ForzarEncendido(); // para iniciar bien
+                palanca.ForzarEncendido();
     }
 
     void Update()
     {
         if (!jugando) return;
 
-        // Movimiento del cursor
         float delta = velocidadCursor * Time.deltaTime;
         cursor.anchoredPosition += new Vector2(0, subiendo ? delta : -delta);
 
@@ -96,10 +94,19 @@ public class GeneradorInteractable : MonoBehaviour
             if (palanca != null)
                 palanca.ForzarEncendido();
 
+
+        estaCompletado = true;
+
+        StartCoroutine(CerrarUI());
+
+    }
+
+    private System.Collections.IEnumerator CerrarUI()
+    {
+        yield return new WaitForSeconds(1.5f);
         if (uiJuego) uiJuego.SetActive(false);
     }
 
-    // Se llama desde TriggerGenerador al presionar E
     public void IniciarMinijuego()
     {
         ResetJuego();

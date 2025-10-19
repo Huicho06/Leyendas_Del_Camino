@@ -20,13 +20,20 @@ public class TriggerGenerador : MonoBehaviour
     void Update()
     {
         if (!playerNearby) return;
+        if (generador == null) return;
 
-        if (Input.GetKeyDown(KeyCode.E))
+        // Si el generador ya fue completado, no permite reiniciar
+        if (generador.estaCompletado)
         {
-            if (generador != null && !generador.jugando)
-            {
-                generador.IniciarMinijuego();
-            }
+            if (promptText && !promptText.text.Contains("activo"))
+                promptText.text = "El generador ya está activo";
+            return;
+        }
+
+        if (Input.GetKeyDown(KeyCode.E) && !generador.jugando)
+        {
+            generador.IniciarMinijuego();
+            OcultarPrompt();
         }
     }
 
@@ -35,9 +42,14 @@ public class TriggerGenerador : MonoBehaviour
         if (!other.CompareTag("Player")) return;
 
         playerNearby = true;
+
         if (promptText)
         {
-            promptText.text = "[E] Activar generador";
+            if (generador != null && generador.estaCompletado)
+                promptText.text = "El generador ya está activo";
+            else
+                promptText.text = "[E] Activar generador";
+
             promptText.gameObject.SetActive(true);
         }
     }
@@ -47,6 +59,11 @@ public class TriggerGenerador : MonoBehaviour
         if (!other.CompareTag("Player")) return;
 
         playerNearby = false;
+        OcultarPrompt();
+    }
+
+    private void OcultarPrompt()
+    {
         if (promptText)
             promptText.gameObject.SetActive(false);
     }
