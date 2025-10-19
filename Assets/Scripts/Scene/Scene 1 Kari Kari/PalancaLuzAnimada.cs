@@ -1,25 +1,21 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using TMPro;
 
 public class PalancaLuzAnimada : MonoBehaviour
 {
     [Header("Configuración")]
-    [Tooltip("Arrastra aquí todas las luces o LuzSagrada que debe activar esta palanca")]
     public List<LuzSagrada> lucesObjetivo = new List<LuzSagrada>();
 
     [Header("Animación de la palanca")]
-    public float duracionAnim = 0.4f;    // tiempo de rotación
-    public float rotacionBajada = 45f;   // grados de bajada
+    public float duracionAnim = 0.4f;
+    public float rotacionBajada = 45f;
 
     [Header("Apagado automático")]
-    public bool autoApagar = true;       // permite que se apague sola
-    public float tiempoAutoApagado = 3f; // segundos antes de apagarse
-    public AudioSource audioGrito;       // arrastra aquí el sonido del enemigo (AudioSource)
-    public AudioClip clipGrito;          // clip del grito
+    public AudioSource audioGrito;
+    public AudioClip clipGrito;
 
-    private bool encendida = false;
+    public bool encendida = false;
     private bool enMovimiento = false;
     private Quaternion rotacionInicial;
     private Quaternion rotacionFinal;
@@ -30,11 +26,29 @@ public class PalancaLuzAnimada : MonoBehaviour
     {
         rotacionInicial = transform.localRotation;
         rotacionFinal = Quaternion.Euler(transform.localEulerAngles + new Vector3(rotacionBajada, 0, 0));
+
+        foreach (var luz in lucesObjetivo)
+        {
+            if (luz != null)
+                luz.OnEnemyTouchLight += (l) => IniciarApagado(l);
+        }
     }
 
     public void Activar()
     {
         if (enMovimiento) return;
+
+        bool algunaDisponible = false;
+        foreach (var luz in lucesObjetivo)
+        {
+            if (luz != null && !luz.estaTocada)
+            {
+                algunaDisponible = true;
+                break;
+            }
+        }
+        if (!algunaDisponible) return;
+
         encendida = !encendida;
 
         foreach (var luz in lucesObjetivo)
@@ -46,32 +60,55 @@ public class PalancaLuzAnimada : MonoBehaviour
 
         StopAllCoroutines();
         StartCoroutine(RotarPalanca(encendida));
-
-        if (encendida && autoApagar)
-            StartCoroutine(ApagarDespuesDeTiempo());
     }
 
-    IEnumerator ApagarDespuesDeTiempo()
+    public void ForzarEncendido()
     {
-        yield return new WaitForSeconds(tiempoAutoApagado);
+        encendida = true;
 
-        // reproduce grito
-        if (audioGrito && clipGrito)
-        {
-            audioGrito.PlayOneShot(clipGrito);
-        }
-
-        // apaga luces
-        encendida = false;
         foreach (var luz in lucesObjetivo)
         {
-            if (luz == null) continue;
-            luz.Desactivar();
+            if (luz != null)
+                luz.Activar();
         }
 
-        // devuelve la palanca a su posición original
         StopAllCoroutines();
-        StartCoroutine(RotarPalanca(false));
+        StartCoroutine(RotarPalanca(true));
+    }
+
+    private void IniciarApagado(LuzSagrada luz)
+    {
+        if (!encendida) return;
+        StartCoroutine(ApagarDespuesDeTiempo(luz));
+    }
+
+    IEnumerator ApagarDespuesDeTiempo(LuzSagrada luz)
+    {
+        yield return new WaitForSeconds(3f);
+
+        if (audioGrito && clipGrito)
+            audioGrito.PlayOneShot(clipGrito);
+
+        if (luz != null)
+            luz.Desactivar();
+
+        // Revisar si queda alguna luz encendida
+        bool algunaEncendida = false;
+        foreach (var l in lucesObjetivo)
+        {
+            if (l != null && l.encendida)
+            {
+                algunaEncendida = true;
+                break;
+            }
+        }
+
+        if (!algunaEncendida)
+        {
+            encendida = false;
+            StopAllCoroutines();
+            StartCoroutine(RotarPalanca(false));
+        }
     }
 
     IEnumerator RotarPalanca(bool haciaAbajo)

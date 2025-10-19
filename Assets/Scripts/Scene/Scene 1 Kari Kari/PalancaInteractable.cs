@@ -6,7 +6,7 @@ public class PalancaInteractable : MonoBehaviour
 {
     [Header("Referencias")]
     public PalancaLuzAnimada palanca;    // arrastra aquí el script PalancaLuzAnimada
-    public TMP_Text promptText;          // texto "[E] Encender luces" o "[E] Apagar luces"
+    public TMP_Text promptText;          // texto de interacción
 
     private bool playerNearby = false;
 
@@ -56,10 +56,28 @@ public class PalancaInteractable : MonoBehaviour
     {
         if (promptText == null || palanca == null) return;
 
-        // Si la palanca tiene luces encendidas → mostrar "Apagar"
-        if (palanca.EstadoEncendido)
+        // Si la palanca está bloqueada (todas las luces fueron tocadas) → mensaje especial
+        bool todasBloqueadas = true;
+        foreach (var luz in palanca.lucesObjetivo)
+        {
+            if (luz != null && !luz.estaTocada)
+            {
+                todasBloqueadas = false;
+                break;
+            }
+        }
+
+        if (todasBloqueadas)
+        {
+            promptText.text = "Las luces dejaron de funcionar";
+        }
+        else if (palanca.EstadoEncendido)
+        {
             promptText.text = "[E] Apagar luces";
+        }
         else
+        {
             promptText.text = "[E] Encender luces";
+        }
     }
 }

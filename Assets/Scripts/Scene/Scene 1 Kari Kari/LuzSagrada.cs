@@ -4,29 +4,36 @@ using UnityEngine;
 public class LuzSagrada : MonoBehaviour
 {
     [Header("Configuración de la luz")]
-    public Light luz;                     // Asigna la luz del foco
-    public float detectionRange = 15f;    // Alcance de la luz
-    public LayerMask enemyLayer;          // Capa Enemy
-    public LayerMask obstacleMask = ~0;   // Paredes, etc.
-
-    public bool encendida = false;
+    public Light luz;
+    public float detectionRange = 15f;
+    public LayerMask enemyLayer;
+    public LayerMask obstacleMask = ~0;
+    public bool encendida = false; // se controla desde la palanca
     public bool debug = false;
+
+    [HideInInspector] public bool estaTocada = false;
+
+    public event System.Action<LuzSagrada> OnEnemyTouchLight;
 
     void Start()
     {
+        // Asegurarse que la luz siempre comience apagada
+        encendida = false;
+        estaTocada = false;
         if (luz != null)
-            luz.enabled = encendida;
+            luz.enabled = false;
     }
 
     void Update()
     {
-        if (encendida)
+        if (encendida && !estaTocada)
             RevisarEnemigos();
     }
 
     public void Activar()
     {
         encendida = true;
+        estaTocada = false;
         if (luz) luz.enabled = true;
     }
 
@@ -43,10 +50,9 @@ public class LuzSagrada : MonoBehaviour
 
         Vector3 origen = luz.transform.position;
         Vector3 direccion = luz.transform.forward;
-        float rango = detectionRange;
         float mitadAngulo = luz.spotAngle * 0.5f;
 
-        Collider[] enemigos = Physics.OverlapSphere(origen, rango, enemyLayer);
+        Collider[] enemigos = Physics.OverlapSphere(origen, detectionRange, enemyLayer);
         foreach (var col in enemigos)
         {
             if (!col) continue;
@@ -55,7 +61,6 @@ public class LuzSagrada : MonoBehaviour
             float angulo = Vector3.Angle(direccion, haciaEnemigo);
             if (angulo > mitadAngulo) continue;
 
-            // Raycast para verificar obstáculos
             var hits = Physics.RaycastAll(origen, haciaEnemigo.normalized, dist, obstacleMask | enemyLayer)
                              .OrderBy(h => h.distance);
             RaycastHit? primero = hits.FirstOrDefault(h => !h.collider.isTrigger);
@@ -64,7 +69,13 @@ public class LuzSagrada : MonoBehaviour
             bool enLuz = primero.Value.collider == col;
             var eb = col.GetComponent<EnemyBehavior>();
             if (eb)
-                eb.Freeze(enLuz); // ← Aquí se congela al enemigo
+                eb.Freeze(enLuz);
+
+            if (enLuz && !estaTocada)
+            {
+                estaTocada = true;
+                OnEnemyTouchLight?.Invoke(this);
+            }
         }
     }
 
@@ -72,5 +83,12 @@ public class LuzSagrada : MonoBehaviour
     {
         foreach (EnemyBehavior e in FindObjectsOfType<EnemyBehavior>())
             e.Freeze(false);
+    }
+
+    void OnDrawGizmosSelected()
+    {
+        if (!debug || luz == null) return;
+        Gizmos.color = Color.yellow;
+        Gizmos.DrawWireSphere(luz.transform.position, detectionRange);
     }
 }
