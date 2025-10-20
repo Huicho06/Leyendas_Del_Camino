@@ -1,17 +1,17 @@
-using UnityEngine;
+Ôªøusing UnityEngine;
 
 [RequireComponent(typeof(Collider))]
 public class HideSpot : MonoBehaviour
 {
     [Header("Punto de ocultarse")]
-    public Transform hidePoint;  // posiciÛn donde se coloca el jugador/c·mara
+    public Transform hidePoint;  // posici√≥n donde se coloca el jugador/c√°mara
 
     [Header("Mensajes")]
     public string enterText = "Presiona E para esconderte";
     public string exitText = "Presiona E para salir";
 
     [Header("Opcional")]
-    public bool faceForward = true;   // orientar al jugador seg˙n el HidePoint
+    public bool faceForward = true;   // orientar al jugador seg√∫n el HidePoint
     public bool requireCrouch = false; // exigir estar agachado para activarlo
 
     private bool playerInside;
@@ -52,7 +52,7 @@ public class HideSpot : MonoBehaviour
         {
             if (currentHider.IsHidden)
             {
-                // Si est·s escondido en ESTE spot, salimos
+                // Si est√°s escondido en ESTE spot, salimos
                 if (currentHider.CurrentSpot == this)
                     currentHider.ExitHide();
             }

@@ -10,6 +10,11 @@ public class PlayerHideSystem : MonoBehaviour
     public NoiseEmitter noiseEmitter;      // opcional: silenciar ruido al esconderse
     public PlayerMovement playerMovement;  // si no lo asignas, se busca en Start
 
+    [Header("Mirada (opcional)")]
+    [Tooltip("Script que controla la mirada con el mouse (FPSLook/CinemachineInput, etc.). Se desactiva al esconderse.")]
+    public MonoBehaviour lookController;
+    public bool freezeLookWhileHidden = true;
+
     [Header("Ajustes")]
     public KeyCode interactKey = KeyCode.E;
     public float moveDuration = 0.35f;     // tiempo de transición a la posición de ocultarse
@@ -27,7 +32,6 @@ public class PlayerHideSystem : MonoBehaviour
     private Quaternion savedPlayerRot;
     private Vector3 savedCamLocalPos;
     private Quaternion savedCamLocalRot;
-    private bool inputWasEnabled = true;
     private bool flashlightWasOn = false;
 
     void Start()
@@ -35,6 +39,10 @@ public class PlayerHideSystem : MonoBehaviour
         if (!playerMovement) playerMovement = GetComponent<PlayerMovement>();
         controller = GetComponent<CharacterController>();
         if (!cameraTransform && Camera.main) cameraTransform = Camera.main.transform;
+
+        // autocapturar lookController si no se asignó
+        if (!lookController)
+            lookController = GetComponentInChildren<MonoBehaviour>(); // si tienes un FPSLook en el hijo/cámara
     }
 
     public bool IsPlayerCrouching()
@@ -80,19 +88,15 @@ public class PlayerHideSystem : MonoBehaviour
         }
 
         // Silencio de ruido
-        bool prevUseNoise = false;
-        if (noiseEmitter && zeroNoiseWhileHidden)
-        {
-            prevUseNoise = playerMovement ? playerMovement.useNoise : false;
-            if (playerMovement) playerMovement.useNoise = false;
-        }
+        if (playerMovement && noiseEmitter && zeroNoiseWhileHidden)
+            playerMovement.useNoise = false;
 
-        // Deshabilitar entrada de movimiento
+        // Congelar inputs y mirada
         if (playerMovement && freezeInputWhileHidden)
-        {
-            inputWasEnabled = true; // asumimos que estaba activo
-            //playerMovement.IsHidden = true; // expuesto para IA
-        }
+            playerMovement.IsHidden = true;              // PlayerMovement debe respetar esto (ver nota abajo)
+
+        if (freezeLookWhileHidden && lookController)
+            lookController.enabled = false;
 
         // Mover al jugador/cámara suavemente al hidePoint
         Vector3 startPos = transform.position;
@@ -101,7 +105,6 @@ public class PlayerHideSystem : MonoBehaviour
         Vector3 targetPos = spot.hidePoint.position;
         Quaternion targetRot = spot.faceForward ? spot.hidePoint.rotation : transform.rotation;
 
-        // Mejor: desactivar momentáneamente el CharacterController para evitar empujes
         bool ccState = controller ? controller.enabled : false;
         if (controller) controller.enabled = false;
 
@@ -120,18 +123,10 @@ public class PlayerHideSystem : MonoBehaviour
         if (controller) controller.enabled = ccState;
 
         IsHidden = true;
-
-        // Opcional: ajustar cámara local si tu HidePoint está pensado para POV exacto
-        // (por defecto la cámara se queda igual; si quieres, crea un hijo "CamLocal"
-        // dentro de HidePoint para posiciones exactas de la cámara y copia su localPos/Rot)
-
-        yield break;
     }
 
     IEnumerator DoExitHide()
     {
-        var spot = CurrentSpot;
-
         // Restaurar entrada/ruido/linterna luego de la transición
         Vector3 fromPos = transform.position;
         Quaternion fromRot = transform.rotation;
@@ -166,11 +161,15 @@ public class PlayerHideSystem : MonoBehaviour
         // Restaurar linterna
         if (flashlight && flashlightWasOn) flashlight.SetActive(true);
 
-        // Restaurar ruido / entrada
-        if (playerMovement)
-        {
-            if (zeroNoiseWhileHidden) playerMovement.useNoise = true;
-        }
+        // Restaurar ruido / entrada / mirada
+        if (playerMovement && freezeInputWhileHidden)
+            playerMovement.IsHidden = false;
+
+        if (playerMovement && zeroNoiseWhileHidden)
+            playerMovement.useNoise = true;
+
+        if (freezeLookWhileHidden && lookController)
+            lookController.enabled = true;
 
         IsHidden = false;
         CurrentSpot = null;

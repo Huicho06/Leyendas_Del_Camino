@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using UnityEngine;
 
 [RequireComponent(typeof(CharacterController))]
@@ -17,7 +17,7 @@ public class PlayerMovement : MonoBehaviour
     public float standHeight = 2f;
     public float crouchTransitionSpeed = 6f;
 
-    [Header("Detecci�n de suelo")]
+    [Header("Detección de suelo")]
     public Transform groundCheck;
     public LayerMask groundMask;
 
@@ -32,7 +32,7 @@ public class PlayerMovement : MonoBehaviour
     public float walkStepInterval = 0.5f;
     public float runStepInterval = 0.35f;
 
-    [Header("C�mara y efectos visuales")]
+    [Header("Cámara y efectos visuales")]
     public Camera playerCamera;
     public float walkFOV = 60f;
     public float runFOV = 70f;
@@ -56,10 +56,11 @@ public class PlayerMovement : MonoBehaviour
     public float maxThrowForce = 20f;
     public float chargeSpeed = 10f;
 
-    // -------------------------
-    // PROPIEDAD P�BLICA DE SIGILO
-    // -------------------------
+    // --- Estado expuesto ---
     public bool IsCrouching { get; private set; }
+
+    // ← NUEVO: bandera que congela TODO cuando estás escondido
+    public bool IsHidden { get; set; }
 
     private GameObject currentStone;
     private float currentThrowForce;
@@ -99,6 +100,29 @@ public class PlayerMovement : MonoBehaviour
     void Update()
     {
         HandleGroundCheck();
+
+        if (IsHidden)
+        {
+            // Congelar completamente
+            isRunning = false;
+            velocity = Vector3.zero;
+
+            // forzar altura de pie (no permitir agacharse) y reset visual de cámara
+            IsCrouching = false;
+            if (controller) controller.height = Mathf.Lerp(controller.height, standHeight, Time.deltaTime * 20f);
+
+            if (playerCamera)
+            {
+                playerCamera.fieldOfView = Mathf.Lerp(playerCamera.fieldOfView, walkFOV, Time.deltaTime * 10f);
+                playerCamera.transform.localPosition = Vector3.Lerp(playerCamera.transform.localPosition, cameraBasePosition, Time.deltaTime * 12f);
+            }
+
+            // Nada de movimiento / salto / pasos / bob / equip / lanzar piedra / gravedad
+            // (solo actualizamos crouch height arriba para mantener standHeight)
+            return;
+        }
+
+        // ---- flujo normal cuando NO estás escondido ----
         HandleMovement();
         HandleJump();
         HandleCrouch();
@@ -146,6 +170,9 @@ public class PlayerMovement : MonoBehaviour
 
     void HandleCrouch()
     {
+        // Si estás escondido, no se puede agachar (esto nunca se ejecuta cuando IsHidden=true, pero lo dejamos blindado)
+        if (IsHidden) return;
+
         if (Input.GetKeyDown(KeyCode.LeftControl))
         {
             IsCrouching = true;

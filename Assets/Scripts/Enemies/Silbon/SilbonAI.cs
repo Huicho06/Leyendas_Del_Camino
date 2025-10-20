@@ -52,6 +52,9 @@ public class SilbonAI : MonoBehaviour
     [Tooltip("Si el agro fue por linterna y pierdo visión mientras el jugador está AGACHADO, corto el agro rápido.")]
     public float crouchAgroDropDelay = 0.35f;
 
+    [Header("Retorno a patrulla")]
+    public float returnToPatrolDelay = 3f;   // ← nuevo: si no hay estímulos, vuelve a patrullar
+
     private NavMeshAgent agent;
     private int patrolIndex = 0;
 
@@ -72,6 +75,9 @@ public class SilbonAI : MonoBehaviour
     private float lastChaseTriggerTime = -999f;
     private float lastSeenLightTime = -999f;
     private float lastSeenPlayerTime = -999f;
+
+    // ← nuevo: timestamp del último estímulo (ver/oír/linterna)
+    private float lastStimulusTime = 0f;
 
     private PlayerMovement playerMove;
 
@@ -126,6 +132,8 @@ public class SilbonAI : MonoBehaviour
 
         if (whistleClip != null)
             StartCoroutine(WhistleLoop());
+
+        lastStimulusTime = Time.time; // ← nuevo
     }
 
     void Update()
@@ -142,7 +150,11 @@ public class SilbonAI : MonoBehaviour
 
         // VISIÓN: ¿lo veo ahora?
         bool los = CanSeePlayer();
-        if (los) lastSeenPlayerTime = Time.time;
+        if (los)
+        {
+            lastSeenPlayerTime = Time.time;
+            lastStimulusTime = Time.time; // ← nuevo
+        }
 
         // Prioridad: CHASING
         if (state == State.Chasing)
@@ -152,10 +164,9 @@ public class SilbonAI : MonoBehaviour
             if (player) agent.SetDestination(player.position);
 
             bool sawRecently = (Time.time - lastSeenPlayerTime) <= sightMemoryTime;
-
             bool stillAgro = los || sawRecently || (Time.time < chaseEndTime);
 
-            // Si el agro fue por LINTERNa y el jugador está en sigilo (agachado) y ya NO hay visión,
+            // Si el agro fue por LINTERNA y el jugador está en sigilo (agachado) y ya NO hay visión,
             // soltamos el agro más rápido.
             if (agro == Agro.Light && !los && IsPlayerCrouching() && (Time.time - lastSeenLightTime) > crouchAgroDropDelay)
                 stillAgro = false;
@@ -187,9 +198,20 @@ public class SilbonAI : MonoBehaviour
             if (noiseId != currentTargetNoiseId)
             {
                 currentTargetNoiseId = noiseId;
+                lastStimulusTime = Time.time; // ← nuevo
                 if (state != State.Investigating) StartInvestigate(pos);
                 else { investigatePosition = pos; agent.SetDestination(investigatePosition); }
             }
+        }
+
+        // Si lleva mucho sin estímulos y no está patrullando → vuelve a patrullar
+        if (state != State.Patrolling && (Time.time - lastStimulusTime) > returnToPatrolDelay)
+        {
+            agro = Agro.None;
+            state = State.Patrolling;
+            agent.speed = patrolSpeed;
+            if (patrolPoints != null && patrolPoints.Length > 0)
+                agent.SetDestination(patrolPoints[patrolIndex].position);
         }
 
         // Patrulla
@@ -206,10 +228,12 @@ public class SilbonAI : MonoBehaviour
     bool CanSeePlayer()
     {
         if (!player) return false;
+
         var hideSys = player.GetComponent<PlayerHideSystem>();
         if (hideSys && hideSys.IsHidden) return false;
 
-        Vector3 toPlayer = player.position - transform.position;
+        Vector3 origin = transform.position + Vector3.up * 1.6f;
+        Vector3 toPlayer = (player.position - origin);
         float dist = toPlayer.magnitude;
         if (dist > viewRange) return false;
 
@@ -218,15 +242,11 @@ public class SilbonAI : MonoBehaviour
         if (angle > viewFOV * 0.5f) return false; // fuera del cono
 
         // Raycast de línea de visión (bloqueos)
-        if (Physics.Raycast(transform.position + Vector3.up * 1.6f, dir, out RaycastHit hit, dist, ~0, QueryTriggerInteraction.Ignore))
+        if (Physics.Raycast(origin, dir, out RaycastHit hit, dist, ~0, QueryTriggerInteraction.Ignore))
         {
-            // bloqueado por obstáculo
-            if (((1 << hit.collider.gameObject.layer) & obstacleMask) != 0)
-                return false;
-
-            // Si lo primero que golpeo no es el jugador, tampoco lo veo.
-            if (!hit.collider.transform.IsChildOf(player))
-                return false;
+            // Si lo primero que golpeo no es el player, o su layer está en obstacleMask → bloqueado
+            if (!hit.collider.transform.IsChildOf(player)) return false;
+            if (((1 << hit.collider.gameObject.layer) & obstacleMask) != 0) return false;
         }
 
         return true;
@@ -243,6 +263,7 @@ public class SilbonAI : MonoBehaviour
         agro = cause;
         state = State.Chasing;
         chaseEndTime = Time.time + Mathf.Max(0.5f, chaseDuration);
+        lastStimulusTime = Time.time; // ← nuevo
 
         if (!player)
         {
@@ -293,6 +314,9 @@ public class SilbonAI : MonoBehaviour
                 yield break;
             }
 
+            // Si pasan X s sin estímulos → regresar a patrulla
+            if ((Time.time - lastStimulusTime) > returnToPatrolDelay) break;
+
             if (!agent.pathPending && agent.remainingDistance <= agent.stoppingDistance + 0.5f) break;
             yield return null;
         }
@@ -338,10 +362,10 @@ public class SilbonAI : MonoBehaviour
     public void OnLitByFlashlight(Transform lightSource, float intensity = 1f)
     {
         lastSeenLightTime = Time.time;
+        lastStimulusTime = Time.time; // ← nuevo
         if (Time.time < lastChaseTriggerTime + chaseCooldown) return;
 
         lastChaseTriggerTime = Time.time;
-        // inicia persecución por linterna
         BeginChase(Agro.Light);
     }
 
