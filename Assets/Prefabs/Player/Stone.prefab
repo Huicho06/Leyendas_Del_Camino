@@ -99,7 +99,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   throwForce: 15
-  noiseIntensity: 5
+  noiseIntensity: 10
   lifetime: 5
 --- !u!54 &4436500562846105051
 Rigidbody:
