@@ -24,6 +24,9 @@ public class PlayerMovement : MonoBehaviour
     [Header("Trayectoria de piedra")]
     public StoneTrajectory stoneTrajectory;
 
+    [Header("Animación")]
+    public Animator animator;
+
     [Header("Sonidos")]
     public AudioClip[] walkClips;
     public AudioClip[] runClips;
@@ -131,6 +134,8 @@ public class PlayerMovement : MonoBehaviour
         HandleCameraEffects();
         HandleEquipSwitch();
         HandleStoneChargeAndThrow();
+        UpdateAnimationBools();
+
     }
 
     void HandleGroundCheck()
@@ -226,6 +231,21 @@ public class PlayerMovement : MonoBehaviour
             if (useNoise && noiseEmitter != null)
                 noiseEmitter.EmitStep(isRunning, IsCrouching);
         }
+    }
+    void UpdateAnimationBools()
+    {
+        if (animator == null) return;
+
+        float x = Input.GetAxis("Horizontal");
+        float z = Input.GetAxis("Vertical");
+        bool isMoving = (x != 0 || z != 0);
+
+        // Estados principales
+        animator.SetBool("isWalking", isMoving && !isRunning && !IsCrouching && isGrounded && !IsHidden);
+        animator.SetBool("isRunning", isRunning && isGrounded && !IsCrouching && !IsHidden);
+        animator.SetBool("isCrouching", IsCrouching && !IsHidden);
+        animator.SetBool("isJumping", !isGrounded && !IsHidden);
+        animator.SetBool("isHidden", IsHidden);
     }
 
     void HandleCameraEffects()

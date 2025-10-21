@@ -132,7 +132,11 @@ public class FlashlightController : MonoBehaviour
 
             // 4) Aplicar efecto
             var eb = col.GetComponent<EnemyBehavior>();
-            if (eb) eb.Freeze(inLight);             // ← sistema clásico de congelar (no tocar)
+            if (eb)
+            {
+                // eb.Freeze(inLight); // ← Congelación clásica (otros enemigos)
+                eb.ReactToLight(inLight); // Retroceso del Kari Kari
+            }       // ← sistema clásico de congelar (no tocar)
 
             var silbon = col.GetComponentInParent<SilbonAI>(); // ← importante: en padre por si el collider es hijo
             if (silbon && inLight)
@@ -146,7 +150,10 @@ public class FlashlightController : MonoBehaviour
     void UnfreezeAllEnemies()
     {
         foreach (EnemyBehavior enemy in FindObjectsOfType<EnemyBehavior>())
-            enemy.Freeze(false);
+        {
+            // enemy.Freeze(false); // ← Descomenta si usas el sistema clásico
+            enemy.ReactToLight(false); // Deja de retroceder si estaba retrocediendo
+        }
     }
 
     void OnDrawGizmosSelected()
