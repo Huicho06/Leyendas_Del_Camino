@@ -138,7 +138,6 @@ GameObject:
   - component: {fileID: 3911904837102331682}
   - component: {fileID: 1887215798937056473}
   - component: {fileID: 6309707506926607531}
-  - component: {fileID: 373972101145699046}
   m_Layer: 0
   m_Name: Jeep 1
   m_TagString: Player
@@ -272,8 +271,8 @@ MonoBehaviour:
   lateralSpeed: 6
   lateralLimit: 8
   smoothLateral: 8
-  useTouch: 0
-  touchSensitivity: 0.01
+  jeepModel: {fileID: 0}
+  jeepAnimator: {fileID: 0}
 --- !u!54 &6309707506926607531
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -301,30 +300,3 @@ Rigidbody:
   m_Interpolate: 1
   m_Constraints: 0
   m_CollisionDetection: 1
---- !u!114 &373972101145699046
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7459031242928106780}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: dd5a4b86d9d570d43992ca5764de737a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  forwardSpeed: 12
-  acceleration: 8
-  brakeForce: 30
-  steerTorque: 6
-  steerSpeedFactor: 6
-  lateralGrip: 8
-  returnKp: 400
-  returnKd: 40
-  maxReturnTorque: 4000
-  maxYawRate: 4
-  maxFlipAngle: 120
-  tiltAmount: 6
-  tiltSmooth: 6
-  useTouch: 0
-  touchSensitivity: 0.01
