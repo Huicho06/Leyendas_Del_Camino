@@ -18,8 +18,6 @@ public class ThrowableObject : MonoBehaviour
     {
         rb.isKinematic = false;
         rb.AddForce(direction * throwForce, ForceMode.Impulse);
-
-        // Destruir automáticamente después de lifetime segundos si no colisiona antes
         Destroy(gameObject, lifetime);
     }
 
@@ -27,20 +25,14 @@ public class ThrowableObject : MonoBehaviour
     {
         if (hasHitGround) return;
 
-        // Si chocó con el suelo
         if (collision.gameObject.CompareTag("Ground"))
         {
             hasHitGround = true;
-
-            // Emitir ruido al caer
             NoiseManager.Instance.ReportNoise(transform.position, noiseIntensity);
-
-            // Destruir la piedra inmediatamente (solo queremos ruido)
             Destroy(gameObject);
         }
         else
         {
-            // Opcional: si choca con otro objeto (pared, enemigo, etc.)
             NoiseManager.Instance.ReportNoise(transform.position, noiseIntensity);
         }
     }
