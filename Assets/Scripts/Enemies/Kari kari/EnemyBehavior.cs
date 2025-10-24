@@ -27,6 +27,14 @@ public class EnemyBehavior : MonoBehaviour
     private NavMeshAgent agent;
     private bool isFrozen = false;
 
+    [Header("Reacción a linterna")]
+    public float retreatSpeed = 2f;          // Velocidad al retroceder
+    public float retreatDuration = 2f;       // Duración del retroceso
+    public Animator animator;                // Asigna el Animator del enemigo
+    private bool isRetreating = false;
+    private float retreatTimer = 0f;
+    private Vector3 retreatDirection;
+
     void Start()
     {
         agent = GetComponent<NavMeshAgent>();
@@ -55,7 +63,11 @@ public class EnemyBehavior : MonoBehaviour
             StopFootsteps();
             return;
         }
-
+        if (isRetreating)
+        {
+            HandleRetreat();
+            return;
+        }
         float distance = Vector3.Distance(transform.position, player.position);
 
         // Si el jugador está dentro del rango de detección → perseguir
@@ -96,9 +108,61 @@ public class EnemyBehavior : MonoBehaviour
         if (state)
         {
             agent.ResetPath();
+            agent.isStopped = true;
             StopFootsteps();
+            if (animator) animator.SetBool("Frozen", true);
+        }
+        else
+        {
+            agent.isStopped = false;
+            if (animator) animator.SetBool("Frozen", false);
         }
     }
+
+
+    public void ReactToLight(bool inLight)
+    {
+        if (inLight && !isRetreating)
+        {
+            StartRetreat();
+        }
+    }
+
+    void StartRetreat()
+    {
+        if (player == null || agent == null) return;
+
+        isRetreating = true;
+        retreatTimer = retreatDuration;
+
+        // Calcula dirección opuesta al jugador
+        Vector3 away = (transform.position - player.position).normalized;
+        retreatDirection = away;
+
+        // Detiene persecución
+        agent.ResetPath();
+        agent.isStopped = true;
+
+        // Activa animación de taparse los ojos
+        if (animator) animator.SetTrigger("CoverEyes");
+    }
+
+    void HandleRetreat()
+    {
+        if (!isRetreating) return;
+
+        retreatTimer -= Time.deltaTime;
+        transform.position += retreatDirection * retreatSpeed * Time.deltaTime;
+        transform.rotation = Quaternion.LookRotation(-retreatDirection); // mira al jugador mientras retrocede
+
+        if (retreatTimer <= 0f)
+        {
+            isRetreating = false;
+            agent.isStopped = false;
+            if (animator) animator.ResetTrigger("CoverEyes");
+        }
+    }
+
 
     private void PlayFootsteps()
     {
