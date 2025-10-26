@@ -53,6 +53,7 @@ public class PlayerMovement : MonoBehaviour
     public GameObject flashlight;
     public GameObject stonePrefab;
     public Transform holdPoint;
+    public GameObject mapObject;   // ← tu objeto del mapa
 
     [Header("Lanzamiento de piedra")]
     public float minThrowForce = 5f;
@@ -76,11 +77,13 @@ public class PlayerMovement : MonoBehaviour
     private float currentSpeed;
     private float stepTimer;
 
+
+
     private float bobTimer = 0f;
     private Vector3 cameraBasePosition;
-
-    private enum Equipped { Flashlight, Stone }
+    private enum Equipped { Flashlight, Stone, Map }
     private Equipped equippedItem = Equipped.Flashlight;
+
 
     void Start()
     {
@@ -288,17 +291,37 @@ public class PlayerMovement : MonoBehaviour
             EquipFlashlight();
         else if (Input.GetKeyDown(KeyCode.Alpha2) && stonePrefab != null)
             EquipStone();
+        else if (Input.GetKeyDown(KeyCode.Alpha3))
+            EquipMap();
     }
+    void EquipMap()
+    {
+        equippedItem = Equipped.Map;
+
+        // Desactiva los otros objetos
+        if (flashlight != null) flashlight.SetActive(false);
+        if (currentStone != null) currentStone.SetActive(false);
+
+        // Activa el mapa
+        if (mapObject != null) mapObject.SetActive(true);
+    }
+
 
     void EquipFlashlight()
     {
+        equippedItem = Equipped.Flashlight;
+
         if (flashlight != null) flashlight.SetActive(true);
         if (currentStone != null) currentStone.SetActive(false);
+        if (mapObject != null) mapObject.SetActive(false);
     }
 
     void EquipStone()
     {
+        equippedItem = Equipped.Stone;
+
         if (flashlight != null) flashlight.SetActive(false);
+        if (mapObject != null) mapObject.SetActive(false);
 
         if (currentStone == null && stonePrefab != null)
         {
