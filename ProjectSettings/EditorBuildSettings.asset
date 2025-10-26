@@ -4,5 +4,23 @@
 EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
-  m_Scenes: []
+  m_Scenes:
+  - enabled: 1
+    path: Assets/Scenes/Menu.unity
+    guid: 819087c29d76d7940bfa62a36ad79378
+  - enabled: 1
+    path: Assets/Scenes/Beni.unity
+    guid: 33005acc9ea372b40901f04221e304ac
+  - enabled: 1
+    path: Assets/Scenes/La paz.unity
+    guid: fc9b58a6da9f7fc4a843d4e846cf72f4
+  - enabled: 1
+    path: Assets/Scenes/Scene1.unity
+    guid: 9fc0d4010bbf28b4594072e72b8655ab
+  - enabled: 1
+    path: Assets/Scenes/SceneLoadingScreen.unity
+    guid: 49eb6a1ed35817048a6f61cba0644735
+  - enabled: 1
+    path: Assets/Scenes/Transision.unity
+    guid: 420d76eb14495e6458fc0e7e9ed64439
   m_configObjects: {}
