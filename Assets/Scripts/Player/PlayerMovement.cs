@@ -293,7 +293,56 @@ public class PlayerMovement : MonoBehaviour
             EquipStone();
         else if (Input.GetKeyDown(KeyCode.Alpha3))
             EquipMap();
+        else if (Input.GetKeyDown(KeyCode.Alpha4))
+            EquipTubo(0);
+        else if (Input.GetKeyDown(KeyCode.Alpha5))
+            EquipTubo(1);
+        else if (Input.GetKeyDown(KeyCode.Alpha6))
+            EquipTubo(2);
+        else if (Input.GetKeyDown(KeyCode.Alpha7))
+            EquipTubo(3);
     }
+    void EquipTubo(int index)
+    {
+        var inv = GetComponent<PlayerInventory>();
+        if (inv == null || index < 0 || index >= inv.tubos.Length)
+        {
+            Debug.LogWarning("❌ Inventario no configurado correctamente.");
+            return;
+        }
+
+        var tubo = inv.tubos[index];
+        if (!tubo.collected)
+        {
+            Debug.Log($"❌ No tienes el {tubo.id} todavía.");
+            return;
+        }
+
+        // Desactivar todo lo demás
+        if (flashlight != null) flashlight.SetActive(false);
+        if (currentStone != null) currentStone.SetActive(false);
+        if (mapObject != null) mapObject.SetActive(false);
+
+        // Desactivar todos los tubos en mano
+        foreach (Transform child in holdPoint)
+            child.gameObject.SetActive(false);
+
+        // Buscar el tubo correspondiente en HoldPoint por nombre
+        string tuboManoName = $"Tubo_0{index + 1}_Mano";
+        Transform tuboMano = holdPoint.Find(tuboManoName);
+
+        if (tuboMano != null)
+        {
+            tuboMano.gameObject.SetActive(true);
+            inv.tuboEquipado = tubo.id;
+            Debug.Log($"✅ Tubo equipado en mano: {tuboManoName}");
+        }
+        else
+        {
+            Debug.LogWarning($"⚠️ No se encontró el modelo {tuboManoName} dentro de HoldPoint");
+        }
+    }
+
     void EquipMap()
     {
         equippedItem = Equipped.Map;
