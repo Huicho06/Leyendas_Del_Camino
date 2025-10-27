@@ -24,15 +24,32 @@ public class PalancaLuzAnimada : MonoBehaviour
 
     void Start()
     {
+        // Forzar apagado completo antes de configurar nada
+        encendida = false;
+        enMovimiento = false;
+
+        // Guardar la rotación inicial real del objeto (tal como está en el editor)
         rotacionInicial = transform.localRotation;
         rotacionFinal = Quaternion.Euler(transform.localEulerAngles + new Vector3(rotacionBajada, 0, 0));
 
+        // Asegurar posición visual inicial (palanca arriba)
+        transform.localRotation = rotacionInicial;
+
+        // Desactivar luces y vincular eventos
         foreach (var luz in lucesObjetivo)
         {
             if (luz != null)
+            {
+                luz.Desactivar();
                 luz.OnEnemyTouchLight += (l) => IniciarApagado(l);
+            }
         }
+
+        // Cortar cualquier corrutina previa que pueda rotarla
+        StopAllCoroutines();
     }
+
+
 
     public void Activar()
     {
