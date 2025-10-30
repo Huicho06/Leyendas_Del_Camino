@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1953259897 &8574412962073106934
+TerrainLayer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: granite
+  m_DiffuseTexture: {fileID: 2800000, guid: 7b816c67f690ac646a025c50dfbaac10, type: 3}
+  m_NormalMapTexture: {fileID: 2800000, guid: 74d802203f99624458a3ee17005bf934, type: 3}
+  m_MaskMapTexture: {fileID: 0}
+  m_TileSize: {x: 50, y: 50}
+  m_TileOffset: {x: 1, y: 1}
+  m_Specular: {r: 0.37106913, g: 0.37106913, b: 0.37106913, a: 0}
+  m_Metallic: 0.232
+  m_Smoothness: 0.356
+  m_NormalScale: 23
+  m_DiffuseRemapMin: {x: 0, y: 0, z: 0, w: 0}
+  m_DiffuseRemapMax: {x: 0.46540874, y: 0.46540874, z: 0.46540874, w: 1}
+  m_MaskMapRemapMin: {x: 1, y: 0.8753297, z: 0, w: 0}
+  m_MaskMapRemapMax: {x: 1, y: 0.8753297, z: 1, w: 1}
