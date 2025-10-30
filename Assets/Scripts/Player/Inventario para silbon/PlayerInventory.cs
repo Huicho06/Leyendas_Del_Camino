@@ -6,33 +6,47 @@ public class TuboData
     public string id;
     public GameObject prefab;
     public bool collected;
+    public bool placed; // ← NUEVO: se marca true cuando se coloca
 }
 
 public class PlayerInventory : MonoBehaviour
 {
-    [Header("Tubos disponibles")]
     public TuboData[] tubos;
+    public string tuboEquipado;
 
-    [HideInInspector] public string tuboEquipado;
-
-    public void AddTubo(string tuboID)
+    public void AddTubo(string id)
     {
         foreach (var t in tubos)
         {
-            if (t.id == tuboID)
+            if (t.id == id)
             {
                 t.collected = true;
-                Debug.Log($"🧩 Tubo añadido al inventario: {tuboID}");
+                Debug.Log($"✅ Tubo {id} agregado al inventario");
                 return;
             }
         }
-        Debug.LogWarning($"❌ Intentaste agregar un tubo desconocido: {tuboID}");
     }
 
-    public TuboData GetTuboByID(string id)
+    public void MarcarColocado(string id)
     {
         foreach (var t in tubos)
-            if (t.id == id) return t;
-        return null;
+        {
+            if (t.id == id)
+            {
+                t.placed = true;
+                Debug.Log($"📦 Tubo {id} marcado como colocado");
+                return;
+            }
+        }
+    }
+
+    public bool EstaColocado(string id)
+    {
+        foreach (var t in tubos)
+        {
+            if (t.id == id)
+                return t.placed;
+        }
+        return false;
     }
 }

@@ -284,6 +284,19 @@ public class PlayerMovement : MonoBehaviour
         if (clip != null)
             audioSource.PlayOneShot(clip);
     }
+    public void QuitarTuboDeLaMano()
+    {
+        // Desactiva todos los tubos en el punto de sujeción
+        foreach (Transform child in holdPoint)
+            child.gameObject.SetActive(false);
+
+        // Limpia el tubo equipado
+        var inv = GetComponent<PlayerInventory>();
+        if (inv != null)
+            inv.tuboEquipado = null;
+
+        Debug.Log("🙌 Tubo quitado de la mano tras colocarlo.");
+    }
 
     void HandleEquipSwitch()
     {
@@ -306,46 +319,64 @@ public class PlayerMovement : MonoBehaviour
     {
         var inv = GetComponent<PlayerInventory>();
         if (inv == null || index < 0 || index >= inv.tubos.Length)
-        {
-            Debug.LogWarning("❌ Inventario no configurado correctamente.");
             return;
-        }
 
         var tubo = inv.tubos[index];
+
         if (!tubo.collected)
         {
-            Debug.Log($"❌ No tienes el {tubo.id} todavía.");
+            Debug.Log($"❌ Aún no tienes el {tubo.id}");
             return;
         }
 
-        // Desactivar todo lo demás
-        if (flashlight != null) flashlight.SetActive(false);
-        if (currentStone != null) currentStone.SetActive(false);
-        if (mapObject != null) mapObject.SetActive(false);
+        if (tubo.placed)
+        {
+            Debug.Log($"⚠️ El {tubo.id} ya fue colocado. No se puede volver a equipar.");
+            return;
+        }
 
-        // Desactivar todos los tubos en mano
+        // Desactiva otros objetos
+        if (flashlight) flashlight.SetActive(false);
+        if (currentStone) currentStone.SetActive(false);
+        if (mapObject) mapObject.SetActive(false);
+
+        // Desactiva tubos previos en mano
         foreach (Transform child in holdPoint)
             child.gameObject.SetActive(false);
 
-        // Buscar el tubo correspondiente en HoldPoint por nombre
-        string tuboManoName = $"Tubo_0{index + 1}_Mano";
-        Transform tuboMano = holdPoint.Find(tuboManoName);
+        // Instancia o activa el tubo correcto
+        string tuboName = $"Tubo_0{index + 1}_Mano";
+        Transform tuboMano = holdPoint.Find(tuboName);
 
         if (tuboMano != null)
         {
             tuboMano.gameObject.SetActive(true);
             inv.tuboEquipado = tubo.id;
-            Debug.Log($"✅ Tubo equipado en mano: {tuboManoName}");
+            Debug.Log($"✅ Equipado: {tubo.id}");
         }
-        else
+        else if (tubo.prefab != null)
         {
-            Debug.LogWarning($"⚠️ No se encontró el modelo {tuboManoName} dentro de HoldPoint");
+            GameObject nuevo = Instantiate(tubo.prefab, holdPoint.position, holdPoint.rotation, holdPoint);
+            nuevo.name = tuboName;
+            inv.tuboEquipado = tubo.id;
+            Debug.Log($"✅ Instanciado y equipado: {tubo.id}");
         }
     }
+
 
     void EquipMap()
     {
         equippedItem = Equipped.Map;
+
+        // Desactivar tubos
+        OcultarTubosDeLaMano();
+
+        // Activar mapa
+        if (mapObject) mapObject.SetActive(true);
+        if (flashlight) flashlight.SetActive(false);
+        if (currentStone) currentStone.SetActive(false);
+
+        Debug.Log("🗺️ Equipando mapa");
 
         // Desactiva los otros objetos
         if (flashlight != null) flashlight.SetActive(false);
@@ -359,7 +390,14 @@ public class PlayerMovement : MonoBehaviour
     void EquipFlashlight()
     {
         equippedItem = Equipped.Flashlight;
+        OcultarTubosDeLaMano();
 
+        // Activar solo la linterna
+        if (flashlight) flashlight.SetActive(true);
+        if (currentStone) currentStone.SetActive(false);
+        if (mapObject) mapObject.SetActive(false);
+
+        Debug.Log("🔦 Equipando linterna");
         if (flashlight != null) flashlight.SetActive(true);
         if (currentStone != null) currentStone.SetActive(false);
         if (mapObject != null) mapObject.SetActive(false);
@@ -368,18 +406,23 @@ public class PlayerMovement : MonoBehaviour
     void EquipStone()
     {
         equippedItem = Equipped.Stone;
+        // Desactivar tubos
+        OcultarTubosDeLaMano();
 
-        if (flashlight != null) flashlight.SetActive(false);
-        if (mapObject != null) mapObject.SetActive(false);
+        // Activar piedra
+        if (flashlight) flashlight.SetActive(false);
+        if (mapObject) mapObject.SetActive(false);
 
-        if (currentStone == null && stonePrefab != null)
+        if (currentStone == null && stonePrefab)
         {
             currentStone = Instantiate(stonePrefab, holdPoint.position, Quaternion.identity);
             currentStone.transform.SetParent(holdPoint);
             currentStone.GetComponent<Rigidbody>().isKinematic = true;
         }
 
-        if (currentStone != null) currentStone.SetActive(true);
+        if (currentStone) currentStone.SetActive(true);
+
+        Debug.Log("🪨 Equipando piedra");
     }
 
     void HandleStoneChargeAndThrow()
@@ -412,4 +455,20 @@ public class PlayerMovement : MonoBehaviour
                 stoneTrajectory.ClearTrajectory();
         }
     }
+    // ------------------------------------------------------
+    // 🧤 Oculta todos los tubos equipados actualmente
+    // ------------------------------------------------------
+    public void OcultarTubosDeLaMano()
+    {
+        foreach (Transform child in holdPoint)
+        {
+            if (child != null && child.name.Contains("Tubo"))
+                child.gameObject.SetActive(false);
+        }
+
+        var inv = GetComponent<PlayerInventory>();
+        if (inv != null)
+            inv.tuboEquipado = null;
+    }
+
 }
