@@ -14,8 +14,18 @@ public class PalancaInteractable : MonoBehaviour
     {
         var col = GetComponent<Collider>();
         col.isTrigger = true;
-        if (promptText) promptText.gameObject.SetActive(false);
+        if (promptText)
+        {
+            promptText.gameObject.SetActive(false);
+            ActualizarTexto(); // Asegura texto coherente desde el inicio
+        }
+
+        if (palanca != null)
+        {
+            palanca.encendida = false; // Forzar apagado al inicio
+        }
     }
+
 
     void Update()
     {
