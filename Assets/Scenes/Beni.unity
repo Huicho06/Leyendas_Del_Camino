@@ -424,6 +424,17 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   highlightMat: {fileID: 2100000, guid: 2b44a7bf4bfb68a489e4ccc93b633d64, type: 2}
+--- !u!114 &445723414 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 753230337713032576, guid: 191c5fddb9fc21544a24d55325d17b0e, type: 3}
+  m_PrefabInstance: {fileID: 247246862}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 445723412}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d1176aefc9bb70b408b9cbc659c1b0a0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1001 &513410566
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -863,7 +874,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5064077641432979965, guid: ee81e110280a42844b203c834fd13161, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 0.268
+      value: 0.144
       objectReference: {fileID: 0}
     - target: {fileID: 5064077641432979965, guid: ee81e110280a42844b203c834fd13161, type: 3}
       propertyPath: m_LocalPosition.y
@@ -2485,6 +2496,17 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   highlightMat: {fileID: 2100000, guid: 2b44a7bf4bfb68a489e4ccc93b633d64, type: 2}
+--- !u!114 &1381780031 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 753230337713032576, guid: 191c5fddb9fc21544a24d55325d17b0e, type: 3}
+  m_PrefabInstance: {fileID: 9019722979591927982}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1381780024}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d1176aefc9bb70b408b9cbc659c1b0a0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1386990679
 GameObject:
   m_ObjectHideFlags: 0
@@ -2576,6 +2598,17 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   highlightMat: {fileID: 2100000, guid: 2b44a7bf4bfb68a489e4ccc93b633d64, type: 2}
+--- !u!114 &1409812603 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 753230337713032576, guid: 191c5fddb9fc21544a24d55325d17b0e, type: 3}
+  m_PrefabInstance: {fileID: 1345235106}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1409812601}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d1176aefc9bb70b408b9cbc659c1b0a0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1411382268
 GameObject:
   m_ObjectHideFlags: 0
@@ -2982,6 +3015,17 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   highlightMat: {fileID: 2100000, guid: 2b44a7bf4bfb68a489e4ccc93b633d64, type: 2}
+--- !u!114 &1664164891 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 753230337713032576, guid: 191c5fddb9fc21544a24d55325d17b0e, type: 3}
+  m_PrefabInstance: {fileID: 1057641224}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1664164889}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d1176aefc9bb70b408b9cbc659c1b0a0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1001 &1676742327
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -3478,7 +3522,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cd5eda75aa74806489e519a244b03fdc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  paredes: []
+  paredes:
+  - {fileID: 1381780031}
+  - {fileID: 1409812603}
+  - {fileID: 445723414}
+  - {fileID: 1664164891}
   puerta: {fileID: 1145337768}
   sonidoAbrir: {fileID: 0}
   volumen: 0.8
@@ -3587,15 +3635,19 @@ MonoBehaviour:
   - id: Tubo_01
     prefab: {fileID: 74514480}
     collected: 1
+    placed: 0
   - id: Tubo_02
     prefab: {fileID: 618007000}
     collected: 1
+    placed: 0
   - id: Tubo_03
     prefab: {fileID: 418666226}
     collected: 1
+    placed: 0
   - id: Tubo_04
     prefab: {fileID: 393833628}
     collected: 1
+    placed: 0
   tuboEquipado: 
 --- !u!114 &1915922986
 MonoBehaviour:
