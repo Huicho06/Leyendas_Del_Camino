@@ -17,12 +17,15 @@ public class LuzSagrada : MonoBehaviour
 
     void Start()
     {
-        // Asegurarse que la luz siempre comience apagada
         encendida = false;
         estaTocada = false;
         if (luz != null)
             luz.enabled = false;
+
+        // Asegurar que quede apagada aunque otro script la active antes del primer frame
+        Invoke(nameof(Desactivar), 0.05f);
     }
+
 
     void Update()
     {
