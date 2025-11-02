@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿
+using System.Linq;
 using UnityEngine;
 
 public class FlashlightController : MonoBehaviour
@@ -37,31 +38,28 @@ public class FlashlightController : MonoBehaviour
         if (flashlight && flashlight.enabled)
             CheckEnemiesInLight();
         else
-            UnfreezeAllEnemies(); // solo afecta a EnemyBehavior
+            UnfreezeAllEnemies(); // solo afecta a EnemyBehavior y SoulAI
     }
 
     void CheckEnemiesInLight()
     {
         if (!flashlight) return;
 
-        // Salgo un poco del collider del player para evitar autocolisión
         Vector3 origin = flashlight.transform.position + flashlight.transform.forward * 0.1f;
         Vector3 forward = flashlight.transform.forward;
         float halfAngle = flashlight.spotAngle * 0.5f;
 
-        // 1) Candidatos por radio (solo enemigos en enemyLayer)
         Collider[] enemies = Physics.OverlapSphere(origin, detectionRange, enemyLayer, QueryTriggerInteraction.Ignore);
         if (debugLogs) Debug.Log($"[Flashlight] candidatos en enemyLayer: {enemies.Length}");
 
-        // Fallback: si enemyLayer no devolvió nada, intentar con cualquier capa, pero solo objetos que tengan SilbonAI
         if (enemies == null || enemies.Length == 0)
         {
             var any = Physics.OverlapSphere(origin, detectionRange, ~0, QueryTriggerInteraction.Ignore)
-                             .Where(c => c.GetComponentInParent<SilbonAI>() != null)
+                             .Where(c => c.GetComponentInParent<SilbonAI>() != null || c.GetComponentInParent<SoulAI>() != null)
                              .ToArray();
             if (any.Length > 0)
             {
-                if (debugLogs) Debug.Log($"[Flashlight] fallback encontró {any.Length} candidatos con SilbonAI");
+                if (debugLogs) Debug.Log($"[Flashlight] fallback encontró {any.Length} candidatos con SilbonAI o SoulAI");
                 enemies = any;
             }
         }
@@ -70,7 +68,6 @@ public class FlashlightController : MonoBehaviour
         {
             if (!col) continue;
 
-            // Punto objetivo para el rayo (ClosestPoint ayuda con colliders grandes)
             Vector3 targetPoint = useClosestPoint
                 ? col.ClosestPoint(origin + forward * detectionRange)
                 : col.bounds.center;
@@ -79,19 +76,19 @@ public class FlashlightController : MonoBehaviour
             float dist = toEnemy.magnitude;
             if (dist <= 0.0001f || dist > detectionRange) continue;
 
-            // 2) Dentro del cono del Spot
             float ang = Vector3.Angle(forward, toEnemy);
             if (ang > halfAngle)
             {
-                // Enemigos con EnemyBehavior: descongelar si salen del cono
                 var ebOff = col.GetComponent<EnemyBehavior>();
                 if (ebOff) ebOff.Freeze(false);
+
+                var soulOff = col.GetComponentInParent<SoulAI>();
+                if (soulOff) soulOff.OnIlluminated(false, flashlight.transform);
                 continue;
             }
 
             Vector3 dir = toEnemy.normalized;
 
-            // 3) RaycastAll: primero válido (ignorando colliders del player). Necesitamos ver si algo bloquea
             int maskAll = obstacleMask | enemyLayer;
             var hits = Physics.RaycastAll(origin, dir, dist, maskAll, QueryTriggerInteraction.Ignore)
                                .OrderBy(h => h.distance);
@@ -99,14 +96,13 @@ public class FlashlightController : MonoBehaviour
             RaycastHit? firstValid = null;
             foreach (var h in hits)
             {
-                if (playerRoot && h.collider.transform.IsChildOf(playerRoot)) continue; // ignora player/arma/cámara
+                if (playerRoot && h.collider.transform.IsChildOf(playerRoot)) continue;
                 firstValid = h; break;
             }
 
             bool inLight = false;
             if (firstValid.HasValue)
             {
-                // ACEPTAR HIJOS DEL MISMO ENEMIGO (no solo el mismo collider)
                 Transform hitT = firstValid.Value.collider.transform;
                 Transform enemyT = col.transform;
 
@@ -125,24 +121,29 @@ public class FlashlightController : MonoBehaviour
             }
             else
             {
-                // No golpeó nada antes → vía libre
                 inLight = true;
                 if (drawRays) Debug.DrawLine(origin, targetPoint, Color.green, 0.05f);
             }
 
-            // 4) Aplicar efecto
             var eb = col.GetComponent<EnemyBehavior>();
             if (eb)
             {
-                // eb.Freeze(inLight); // ← Congelación clásica (otros enemigos)
-                eb.ReactToLight(inLight); // Retroceso del Kari Kari
-            }       // ← sistema clásico de congelar (no tocar)
+                eb.ReactToLight(inLight);
+            }
 
-            var silbon = col.GetComponentInParent<SilbonAI>(); // ← importante: en padre por si el collider es hijo
+            var silbon = col.GetComponentInParent<SilbonAI>();
             if (silbon && inLight)
             {
                 if (debugLogs) Debug.Log("[Flashlight] Silbón iluminado → OnLitByFlashlight()");
-                silbon.OnLitByFlashlight(flashlight.transform, 1f); // activa persecución
+                silbon.OnLitByFlashlight(flashlight.transform, 1f);
+            }
+
+            // NUEVO: Souls
+            var soul = col.GetComponentInParent<SoulAI>();
+            if (soul != null)
+            {
+                soul.OnIlluminated(inLight, flashlight.transform);
+                if (debugLogs) Debug.Log($"[Flashlight] Soul '{soul.name}' iluminada: {inLight}");
             }
         }
     }
@@ -151,8 +152,12 @@ public class FlashlightController : MonoBehaviour
     {
         foreach (EnemyBehavior enemy in FindObjectsOfType<EnemyBehavior>())
         {
-            // enemy.Freeze(false); // ← Descomenta si usas el sistema clásico
-            enemy.ReactToLight(false); // Deja de retroceder si estaba retrocediendo
+            enemy.ReactToLight(false);
+        }
+
+        foreach (SoulAI soul in FindObjectsOfType<SoulAI>())
+        {
+            soul.OnIlluminated(false, flashlight ? flashlight.transform : null);
         }
     }
 
