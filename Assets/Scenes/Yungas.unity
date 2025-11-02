@@ -487,11 +487,11 @@ MonoBehaviour:
   playOnApproach: 1
   hearingDistance: 600
   detectionDistance: 40
+  detectionAnimationDelay: 2.5
   agent: {fileID: 0}
   wanderRadius: 12
   wanderInterval: 4
   chaseDistance: 15
-  attackRange: 2.2
   lightExposureTime: 2
   dissolveDuration: 1
   dissolveProperty: _Dissolve
@@ -499,7 +499,6 @@ MonoBehaviour:
   soulAnimator: {fileID: 0}
   pathFollower: {fileID: 556336896}
   player: {fileID: 430247039}
-  detectionAnimationDelay: 2.5
 --- !u!114 &556336896
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1596,26 +1595,25 @@ MonoBehaviour:
   trueColor: {r: 1, g: 0.92, b: 0.6, a: 1}
   falseColor: {r: 1, g: 0, b: 0, a: 1}
   highlightIntensity: 30
-  emissionBlend: 0.166
+  emissionBlend: 0.728
   audioSource: {fileID: 430247040}
   voiceClip: {fileID: 0}
   shoutClip: {fileID: 8300000, guid: 44b7f174882105d4b8281391edcdc32e, type: 3}
   playOnApproach: 1
   hearingDistance: 40
   detectionDistance: 40
+  detectionAnimationDelay: 5
   agent: {fileID: 0}
-  wanderRadius: 12
-  wanderInterval: 4
-  chaseDistance: 15
-  attackRange: 2.2
+  wanderRadius: 16.3
+  wanderInterval: 11.95
+  chaseDistance: 53.9
   lightExposureTime: 2
-  dissolveDuration: 1
+  dissolveDuration: 0
   dissolveProperty: _Dissolve
   memoryAnimator: {fileID: 0}
   soulAnimator: {fileID: 0}
   pathFollower: {fileID: 0}
   player: {fileID: 430247039}
-  detectionAnimationDelay: 2.5
 --- !u!23 &2007685168
 MeshRenderer:
   m_ObjectHideFlags: 0

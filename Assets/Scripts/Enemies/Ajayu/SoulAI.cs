@@ -20,40 +20,36 @@ public class SoulAI : MonoBehaviour
 
     [Header("Audio")]
     public AudioSource audioSource;
-    public AudioClip voiceClip;       // canto o voz de la esposa / clip de aproximación
-    public AudioClip shoutClip;       // clip que gritan las almas enemigas al detectar
+    public AudioClip voiceClip;
+    public AudioClip shoutClip;
     public bool playOnApproach = true;
 
-    [Header("Detección / Activación (alma buena)")]
-    public float hearingDistance = 20f;     // empieza a oír el canto
-    public float detectionDistance = 10f;   // alma te reconoce y anima
+    [Header("Detección / Alma buena")]
+    public float hearingDistance = 20f;
+    public float detectionDistance = 10f;
+    public float detectionAnimationDelay = 2.5f;
 
-    [Header("Enemigos (NavMesh)")]
-    public NavMeshAgent agent;              // para almas enemigas
+    [Header("Enemigo (NavMesh)")]
+    public NavMeshAgent agent;
     public float wanderRadius = 12f;
     public float wanderInterval = 4f;
-    public float chaseDistance = 15f;       // si el jugador entra en este rango se agresivan
-    public float attackRange = 2.2f;        // distancia de ataque (puedes aplicar daño)
+    public float chaseDistance = 15f;
 
     [Header("Desaparición por luz")]
-    public float lightExposureTime = 2f;    // tiempo bajo la luz para disolver
-    public float dissolveDuration = 1f;     // duracion anim disolve
-    public string dissolveProperty = "_Dissolve"; // nombre del float en shader
+    public float lightExposureTime = 2f;
+    public float dissolveDuration = 1f;
+    public string dissolveProperty = "_Dissolve";
 
-    [Header("Memoria y Movimiento (alma buena)")]
+    [Header("Referencias externas")]
     public Animator memoryAnimator;
-    public Animator soulAnimator;           // anim por detectar (giro, brillar)
+    public Animator soulAnimator;
     public PathFollower pathFollower;
     public Transform player;
-    public float detectionAnimationDelay = 2.5f; // espera antes de iniciar ruta
 
-    // estado interno
     Renderer[] rends;
     Material[] instancedMats;
     bool hasStartedSinging = false;
     bool hasDetectedPlayer = false;
-
-    // enemigo estado
     bool isAggressive = false;
     bool isDissolving = false;
     float lightTimer = 0f;
@@ -63,8 +59,6 @@ public class SoulAI : MonoBehaviour
     {
         if (!soulRenderer) soulRenderer = GetComponentInChildren<Renderer>();
         audioSource = GetComponent<AudioSource>();
-
-        // audio 3D básico
         audioSource.playOnAwake = false;
         audioSource.loop = false;
         audioSource.spatialBlend = 1f;
@@ -73,19 +67,12 @@ public class SoulAI : MonoBehaviour
         if (soulRenderer)
         {
             rends = soulRenderer.GetComponentsInChildren<Renderer>();
-            // forzar instanciar materiales para poder modificar sin tocar sharedMaterials
-            instancedMats = rends.SelectMany(r =>
-            {
-                var mats = r.materials; // this clones materials for this renderer
-                // return array of clones
-                return mats;
-            }).ToArray();
+            instancedMats = rends.SelectMany(r => r.materials).ToArray();
         }
 
         if (!agent)
             agent = GetComponent<NavMeshAgent>();
 
-        // si es enemigo y tiene agente, arrancar wandering
         if (!isTrueSoul && agent)
         {
             agent.stoppingDistance = 0.5f;
@@ -95,56 +82,50 @@ public class SoulAI : MonoBehaviour
 
     void Update()
     {
-        if (isDissolving) return;
-        if (!player) return;
+        if (isDissolving || !player) return;
 
         float dist = Vector3.Distance(transform.position, player.position);
 
         if (isTrueSoul)
-        {
-            // fase 1: se oye el canto
-            if (!hasStartedSinging && dist <= hearingDistance)
-            {
-                hasStartedSinging = true;
-                if (playOnApproach && voiceClip) StartSinging();
-            }
-
-            // fase 2: detecta y anima
-            if (!hasDetectedPlayer && dist <= detectionDistance)
-            {
-                hasDetectedPlayer = true;
-                StopSinging();
-                if (soulAnimator) soulAnimator.SetTrigger("OnDetectPlayer");
-                if (memoryAnimator) memoryAnimator.SetTrigger("OnDetectPlayer");
-                StartCoroutine(DelayedStartGuide(detectionAnimationDelay));
-            }
-        }
+            HandleTrueSoul(dist);
         else
+            HandleEnemySoul(dist);
+    }
+
+    void HandleTrueSoul(float dist)
+    {
+        if (!hasStartedSinging && dist <= hearingDistance)
         {
-            // comportamiento enemigo: si detecta al jugador, agresivar y perseguir
-            if (!isAggressive && dist <= chaseDistance)
-            {
-                isAggressive = true;
-                if (wanderRoutine != null) StopCoroutine(wanderRoutine);
-                if (shoutClip && audioSource) audioSource.PlayOneShot(shoutClip);
-            }
+            hasStartedSinging = true;
+            if (playOnApproach && voiceClip) StartSinging();
+        }
 
-            if (isAggressive && agent)
-            {
-                agent.SetDestination(player.position);
+        if (!hasDetectedPlayer && dist <= detectionDistance)
+        {
+            hasDetectedPlayer = true;
+            StopSinging();
+            if (soulAnimator) soulAnimator.SetTrigger("OnDetectPlayer");
+            if (memoryAnimator) memoryAnimator.SetTrigger("OnDetectPlayer");
+            StartCoroutine(DelayedStartGuide(detectionAnimationDelay));
+        }
+    }
 
-                // si está muy cerca, atacar (aquí pones tu propia lógica de daño)
-                if (dist <= attackRange)
-                {
-                    // ejemplo simple: mirar y detenerse
-                    agent.isStopped = true;
-                    transform.LookAt(player);
-                    // TODO: llamar al método de daño del jugador
-                }
-                else
-                {
-                    agent.isStopped = false;
-                }
+    void HandleEnemySoul(float dist)
+    {
+        if (!isAggressive && dist <= chaseDistance)
+        {
+            isAggressive = true;
+            if (wanderRoutine != null) StopCoroutine(wanderRoutine);
+            if (shoutClip) audioSource.PlayOneShot(shoutClip);
+        }
+
+        if (isAggressive && agent)
+        {
+            agent.SetDestination(player.position);
+
+            if (dist <= agent.stoppingDistance + 0.5f)
+            {
+                StartCoroutine(SlowPlayerThenDisappear());
             }
         }
     }
@@ -159,7 +140,6 @@ public class SoulAI : MonoBehaviour
         }
     }
 
-    // Wander loop para almas enemigas
     IEnumerator WanderLoop()
     {
         while (true)
@@ -173,22 +153,18 @@ public class SoulAI : MonoBehaviour
         }
     }
 
-    // helper para obtener punto aleatorio en NavMesh
     public static Vector3 RandomNavSphere(Vector3 origin, float dist)
     {
-        Vector3 randDir = Random.insideUnitSphere * dist;
-        randDir += origin;
+        Vector3 randDir = Random.insideUnitSphere * dist + origin;
         NavMeshHit navHit;
         NavMesh.SamplePosition(randDir, out navHit, dist, NavMesh.AllAreas);
         return navHit.position;
     }
 
-    // llamado desde FlashlightController
     public void OnIlluminated(bool illuminated, Transform flashlightTransform)
     {
         if (isDissolving) return;
 
-        // actualización visual de emisión
         Color target = illuminated ? (isTrueSoul ? trueColor : falseColor) : Color.black;
         foreach (var r in rends)
         {
@@ -197,53 +173,69 @@ public class SoulAI : MonoBehaviour
                 if (m.HasProperty("_EmissionColor"))
                 {
                     m.EnableKeyword("_EMISSION");
-                    m.SetColor("_EmissionColor", Color.Lerp(Color.black, target * highlightIntensity, illuminated ? emissionBlend : 0f));
+                    m.SetColor("_EmissionColor",
+                        Color.Lerp(Color.black, target * highlightIntensity, illuminated ? emissionBlend : 0f));
                 }
             }
         }
 
-        // sonido breve al iluminar
-        if (illuminated && isTrueSoul && audioSource && voiceClip && !audioSource.isPlaying)
+        if (illuminated && isTrueSoul && voiceClip && !audioSource.isPlaying)
         {
             audioSource.clip = voiceClip;
             audioSource.Play();
         }
 
-        // enemigos: acumulador de tiempo bajo la luz
         if (!isTrueSoul)
         {
             if (illuminated)
             {
                 lightTimer += Time.deltaTime;
-                // opcional: cuando empieza a recibir la luz, frena y mira a la linterna
                 if (lightTimer > 0f && agent) agent.isStopped = true;
 
-                if (lightTimer >= lightExposureTime)
-                {
-                    // iniciar disolver
-                    if (!isDissolving) StartCoroutine(DissolveAndDestroy());
-                }
+                if (lightTimer >= lightExposureTime && !isDissolving)
+                    StartCoroutine(DissolveAndDestroy());
             }
             else
             {
-                if (lightTimer > 0f)
-                {
-                    // salir de la luz: reiniciar contador y reanudar patrulla o persecución
-                    lightTimer = 0f;
-                    if (agent) agent.isStopped = false;
-                    if (!isAggressive && wanderRoutine == null) wanderRoutine = StartCoroutine(WanderLoop());
-                }
+                lightTimer = 0f;
+                if (agent) agent.isStopped = false;
+                if (!isAggressive && wanderRoutine == null)
+                    wanderRoutine = StartCoroutine(WanderLoop());
             }
         }
+    }
+
+    IEnumerator SlowPlayerThenDisappear()
+    {
+        if (isDissolving) yield break;
+        isDissolving = true;
+
+        if (player != null)
+        {
+            var move = player.GetComponent<PlayerMovement>();
+            if (move != null)
+            {
+                float originalWalk = move.walkSpeed;
+                float originalRun = move.runSpeed;
+
+                move.walkSpeed *= 0.5f;
+                move.runSpeed *= 0.5f;
+
+                yield return new WaitForSeconds(5f); // ralentización temporal
+
+                move.walkSpeed = originalWalk;
+                move.runSpeed = originalRun;
+            }
+        }
+
+        yield return StartCoroutine(DissolveAndDestroy());
     }
 
     IEnumerator DissolveAndDestroy()
     {
         isDissolving = true;
-        // parar agente
         if (agent) agent.isStopped = true;
-        // reproducir sonido de muerte opcional
-        // gradual set float on materials
+
         float t = 0f;
         while (t < dissolveDuration)
         {
@@ -256,16 +248,15 @@ public class SoulAI : MonoBehaviour
             }
             yield return null;
         }
+
         Destroy(gameObject);
     }
-    // dentro de la clase SoulAI
+
     public void TriggerMemory()
     {
-        if (memoryAnimator != null)
-            memoryAnimator.SetTrigger("ShowMemory");
+        if (memoryAnimator) memoryAnimator.SetTrigger("ShowMemory");
     }
 
-    // utilitarios audio/animacion
     public void StartSinging()
     {
         if (audioSource && voiceClip)
