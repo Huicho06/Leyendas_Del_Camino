@@ -57,4 +57,6 @@ public class ParedDeTubos : MonoBehaviour
 
         return true;
     }
+    public bool TieneTubo() => tieneTubo;
+
 }
