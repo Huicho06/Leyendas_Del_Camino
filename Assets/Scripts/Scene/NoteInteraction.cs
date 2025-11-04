@@ -5,49 +5,54 @@ using UnityEngine.UI;
 
 public class NoteInteraction : MonoBehaviour
 {
-    [Header("Configuración UI")]
-    public GameObject noteUI;        // Panel completo de la nota
-    public TMP_Text noteText;        // Texto dentro del panel
-    public Image noteImage;          // Imagen dentro del panel
-    public TMP_Text interactionText; // Texto "[E] Leer nota"
-
     [Header("Contenido de la nota")]
     [TextArea(5, 15)]
-    public string noteContent;       // Texto de la nota
-    public Sprite noteSprite;        // Imagen opcional
+    public string noteContent;
+    public Sprite noteSprite;
 
-    [Header("Control del jugador")]
-    public MonoBehaviour playerControl; // Asigna aquí el script que controla al jugador (movimiento/linterna)
-    public static bool isReadingNote = false;
+    [Header("UI")]
+    public GameObject noteUI;
+    public TMP_Text noteText;
+    public Image noteImage;
+
     private bool isPlayerNearby = false;
     private bool isReading = false;
 
+    public static bool isReadingNote = false;
+
     void Start()
     {
-        noteUI.SetActive(false);
-        if (interactionText != null)
-            interactionText.gameObject.SetActive(false);
+        if (noteUI != null)
+            noteUI.SetActive(false);
     }
 
     void Update()
     {
-        if (isPlayerNearby && !isReading && Input.GetKeyDown(KeyCode.E))
+        if (!isPlayerNearby) return;
+
+        if (Input.GetKeyDown(KeyCode.E))
         {
-            OpenNote();
-        }
-        else if (isReading && Input.GetKeyDown(KeyCode.Escape))
-        {
-            CloseNote();
+            if (!isReading)
+            {
+                OpenNote();
+            }
+            else
+            {
+                CloseNote();
+            }
         }
     }
 
     void OpenNote()
     {
         isReading = true;
-        isReadingNote = true; // <-- bloquea input globalmente
-        noteUI.SetActive(true);
+        isReadingNote = true;
+        if (noteUI != null)
+            noteUI.SetActive(true);
+
         if (noteText != null)
             noteText.text = noteContent;
+
         if (noteImage != null && noteSprite != null)
             noteImage.sprite = noteSprite;
 
@@ -55,40 +60,35 @@ public class NoteInteraction : MonoBehaviour
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
 
-        if (interactionText != null)
-            interactionText.gameObject.SetActive(false);
+        PromptManager.instance.HidePrompt();
     }
 
     void CloseNote()
     {
         isReading = false;
-        isReadingNote = false; // <-- desbloquea input
-        noteUI.SetActive(false);
+        isReadingNote = false;
+        if (noteUI != null)
+            noteUI.SetActive(false);
 
         Time.timeScale = 1f;
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
     }
 
-
-
     void OnTriggerEnter(Collider other)
     {
-        if (other.CompareTag("Player"))
-        {
-            isPlayerNearby = true;
-            if (interactionText != null)
-                interactionText.gameObject.SetActive(true);
-        }
+        if (!other.CompareTag("Player")) return;
+
+        isPlayerNearby = true;
+        if (!isReading)
+            PromptManager.instance.ShowPrompt("[E] Leer nota");
     }
 
     void OnTriggerExit(Collider other)
     {
-        if (other.CompareTag("Player"))
-        {
-            isPlayerNearby = false;
-            if (interactionText != null)
-                interactionText.gameObject.SetActive(false);
-        }
+        if (!other.CompareTag("Player")) return;
+
+        isPlayerNearby = false;
+        PromptManager.instance.HidePrompt();
     }
 }
