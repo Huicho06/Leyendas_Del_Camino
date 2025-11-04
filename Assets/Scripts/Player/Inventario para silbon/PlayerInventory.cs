@@ -25,6 +25,8 @@ public class PlayerInventory : MonoBehaviour
                 return;
             }
         }
+        FindObjectOfType<PlayerMovement>().ActualizarItemsDisponibles();
+
     }
 
     public void MarcarColocado(string id)

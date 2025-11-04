@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 [RequireComponent(typeof(CharacterController))]
@@ -53,22 +54,19 @@ public class PlayerMovement : MonoBehaviour
     public GameObject flashlight;
     public GameObject stonePrefab;
     public Transform holdPoint;
-    public GameObject mapObject;   // ← tu objeto del mapa
+    public GameObject mapObject;
 
     [Header("Lanzamiento de piedra")]
     public float minThrowForce = 5f;
     public float maxThrowForce = 20f;
     public float chargeSpeed = 10f;
 
-    // --- Estado expuesto ---
+    // Estado
     public bool IsCrouching { get; private set; }
-
-    // ← NUEVO: bandera que congela TODO cuando estás escondido
     public bool IsHidden { get; set; }
 
     private GameObject currentStone;
     private float currentThrowForce;
-
     private AudioSource audioSource;
     private CharacterController controller;
     private Vector3 velocity;
@@ -76,14 +74,15 @@ public class PlayerMovement : MonoBehaviour
     private bool isRunning;
     private float currentSpeed;
     private float stepTimer;
-
-
-
     private float bobTimer = 0f;
     private Vector3 cameraBasePosition;
+
     private enum Equipped { Flashlight, Stone, Map }
     private Equipped equippedItem = Equipped.Flashlight;
 
+    // 🧠 Lista dinámica de ítems disponibles
+    private List<int> availableItems = new List<int>();
+    private int currentItemIndex = 0;
 
     void Start()
     {
@@ -99,7 +98,12 @@ public class PlayerMovement : MonoBehaviour
         if (playerCamera != null)
             cameraBasePosition = playerCamera.transform.localPosition;
 
-        EquipFlashlight(); // por defecto
+        // 🔰 Ítems base disponibles al inicio
+        availableItems.Add(0); // Linterna
+        availableItems.Add(1); // Piedra
+        availableItems.Add(2); // Mapa
+
+        EquipFlashlight(); // Por defecto
         currentThrowForce = minThrowForce;
     }
 
@@ -109,26 +113,20 @@ public class PlayerMovement : MonoBehaviour
 
         if (IsHidden)
         {
-            // Congelar completamente
             isRunning = false;
             velocity = Vector3.zero;
-
-            // forzar altura de pie (no permitir agacharse) y reset visual de cámara
             IsCrouching = false;
-            if (controller) controller.height = Mathf.Lerp(controller.height, standHeight, Time.deltaTime * 20f);
+
+            controller.height = Mathf.Lerp(controller.height, standHeight, Time.deltaTime * 20f);
 
             if (playerCamera)
             {
                 playerCamera.fieldOfView = Mathf.Lerp(playerCamera.fieldOfView, walkFOV, Time.deltaTime * 10f);
                 playerCamera.transform.localPosition = Vector3.Lerp(playerCamera.transform.localPosition, cameraBasePosition, Time.deltaTime * 12f);
             }
-
-            // Nada de movimiento / salto / pasos / bob / equip / lanzar piedra / gravedad
-            // (solo actualizamos crouch height arriba para mantener standHeight)
             return;
         }
 
-        // ---- flujo normal cuando NO estás escondido ----
         HandleMovement();
         HandleJump();
         HandleCrouch();
@@ -138,7 +136,6 @@ public class PlayerMovement : MonoBehaviour
         HandleEquipSwitch();
         HandleStoneChargeAndThrow();
         UpdateAnimationBools();
-
     }
 
     void HandleGroundCheck()
@@ -178,7 +175,6 @@ public class PlayerMovement : MonoBehaviour
 
     void HandleCrouch()
     {
-        // Si estás escondido, no se puede agachar (esto nunca se ejecuta cuando IsHidden=true, pero lo dejamos blindado)
         if (IsHidden) return;
 
         if (Input.GetKeyDown(KeyCode.LeftControl))
@@ -235,6 +231,7 @@ public class PlayerMovement : MonoBehaviour
                 noiseEmitter.EmitStep(isRunning, IsCrouching);
         }
     }
+
     void UpdateAnimationBools()
     {
         if (animator == null) return;
@@ -243,7 +240,6 @@ public class PlayerMovement : MonoBehaviour
         float z = Input.GetAxis("Vertical");
         bool isMoving = (x != 0 || z != 0);
 
-        // Estados principales
         animator.SetBool("isWalking", isMoving && !isRunning && !IsCrouching && isGrounded && !IsHidden);
         animator.SetBool("isRunning", isRunning && isGrounded && !IsCrouching && !IsHidden);
         animator.SetBool("isCrouching", IsCrouching && !IsHidden);
@@ -284,13 +280,12 @@ public class PlayerMovement : MonoBehaviour
         if (clip != null)
             audioSource.PlayOneShot(clip);
     }
+
     public void QuitarTuboDeLaMano()
     {
-        // Desactiva todos los tubos en el punto de sujeción
         foreach (Transform child in holdPoint)
             child.gameObject.SetActive(false);
 
-        // Limpia el tubo equipado
         var inv = GetComponent<PlayerInventory>();
         if (inv != null)
             inv.tuboEquipado = null;
@@ -298,23 +293,79 @@ public class PlayerMovement : MonoBehaviour
         Debug.Log("🙌 Tubo quitado de la mano tras colocarlo.");
     }
 
+    // 🧩 Actualiza los ítems disponibles según inventario
+    public void ActualizarItemsDisponibles()
+    {
+        availableItems.Clear();
+        availableItems.Add(0); // Linterna
+        availableItems.Add(1); // Piedra
+        availableItems.Add(2); // Mapa
+
+        var inv = GetComponent<PlayerInventory>();
+        if (inv != null && inv.tubos != null)
+        {
+            for (int i = 0; i < inv.tubos.Length; i++)
+            {
+                if (inv.tubos[i].collected && !inv.tubos[i].placed)
+                    availableItems.Add(3 + i);
+            }
+        }
+
+        if (currentItemIndex >= availableItems.Count)
+            currentItemIndex = 0;
+    }
+
+    // 💡 Scroll + teclas numéricas (solo ítems disponibles)
     void HandleEquipSwitch()
     {
-        if (Input.GetKeyDown(KeyCode.Alpha1))
-            EquipFlashlight();
-        else if (Input.GetKeyDown(KeyCode.Alpha2) && stonePrefab != null)
-            EquipStone();
-        else if (Input.GetKeyDown(KeyCode.Alpha3))
-            EquipMap();
-        else if (Input.GetKeyDown(KeyCode.Alpha4))
-            EquipTubo(0);
-        else if (Input.GetKeyDown(KeyCode.Alpha5))
-            EquipTubo(1);
-        else if (Input.GetKeyDown(KeyCode.Alpha6))
-            EquipTubo(2);
-        else if (Input.GetKeyDown(KeyCode.Alpha7))
-            EquipTubo(3);
+        ActualizarItemsDisponibles();
+
+        float scroll = Input.GetAxis("Mouse ScrollWheel");
+        if (scroll != 0f && availableItems.Count > 0)
+        {
+            int currentIndexInList = availableItems.IndexOf(currentItemIndex);
+            if (currentIndexInList == -1)
+                currentIndexInList = 0;
+
+            if (scroll > 0f)
+                currentIndexInList++;
+            else if (scroll < 0f)
+                currentIndexInList--;
+
+            if (currentIndexInList >= availableItems.Count)
+                currentIndexInList = 0;
+            else if (currentIndexInList < 0)
+                currentIndexInList = availableItems.Count - 1;
+
+            currentItemIndex = availableItems[currentIndexInList];
+            EquipItemByIndex(currentItemIndex);
+            return;
+        }
+
+        if (Input.GetKeyDown(KeyCode.Alpha1) && availableItems.Contains(0)) { currentItemIndex = 0; EquipFlashlight(); }
+        else if (Input.GetKeyDown(KeyCode.Alpha2) && availableItems.Contains(1)) { currentItemIndex = 1; EquipStone(); }
+        else if (Input.GetKeyDown(KeyCode.Alpha3) && availableItems.Contains(2)) { currentItemIndex = 2; EquipMap(); }
+        else if (Input.GetKeyDown(KeyCode.Alpha4) && availableItems.Contains(3)) { currentItemIndex = 3; EquipTubo(0); }
+        else if (Input.GetKeyDown(KeyCode.Alpha5) && availableItems.Contains(4)) { currentItemIndex = 4; EquipTubo(1); }
+        else if (Input.GetKeyDown(KeyCode.Alpha6) && availableItems.Contains(5)) { currentItemIndex = 5; EquipTubo(2); }
+        else if (Input.GetKeyDown(KeyCode.Alpha7) && availableItems.Contains(6)) { currentItemIndex = 6; EquipTubo(3); }
     }
+
+    void EquipItemByIndex(int index)
+    {
+        switch (index)
+        {
+            case 0: EquipFlashlight(); break;
+            case 1: EquipStone(); break;
+            case 2: EquipMap(); break;
+            case 3: EquipTubo(0); break;
+            case 4: EquipTubo(1); break;
+            case 5: EquipTubo(2); break;
+            case 6: EquipTubo(3); break;
+            default: EquipFlashlight(); break;
+        }
+    }
+
     void EquipTubo(int index)
     {
         var inv = GetComponent<PlayerInventory>();
@@ -322,29 +373,24 @@ public class PlayerMovement : MonoBehaviour
             return;
 
         var tubo = inv.tubos[index];
-
         if (!tubo.collected)
         {
             Debug.Log($"❌ Aún no tienes el {tubo.id}");
             return;
         }
-
         if (tubo.placed)
         {
-            Debug.Log($"⚠️ El {tubo.id} ya fue colocado. No se puede volver a equipar.");
+            Debug.Log($"⚠️ El {tubo.id} ya fue colocado.");
             return;
         }
 
-        // Desactiva otros objetos
         if (flashlight) flashlight.SetActive(false);
         if (currentStone) currentStone.SetActive(false);
         if (mapObject) mapObject.SetActive(false);
 
-        // Desactiva tubos previos en mano
         foreach (Transform child in holdPoint)
             child.gameObject.SetActive(false);
 
-        // Instancia o activa el tubo correcto
         string tuboName = $"Tubo_0{index + 1}_Mano";
         Transform tuboMano = holdPoint.Find(tuboName);
 
@@ -363,53 +409,30 @@ public class PlayerMovement : MonoBehaviour
         }
     }
 
-
     void EquipMap()
     {
         equippedItem = Equipped.Map;
-
-        // Desactivar tubos
         OcultarTubosDeLaMano();
-
-        // Activar mapa
         if (mapObject) mapObject.SetActive(true);
         if (flashlight) flashlight.SetActive(false);
         if (currentStone) currentStone.SetActive(false);
-
         Debug.Log("🗺️ Equipando mapa");
-
-        // Desactiva los otros objetos
-        if (flashlight != null) flashlight.SetActive(false);
-        if (currentStone != null) currentStone.SetActive(false);
-
-        // Activa el mapa
-        if (mapObject != null) mapObject.SetActive(true);
     }
-
 
     void EquipFlashlight()
     {
         equippedItem = Equipped.Flashlight;
         OcultarTubosDeLaMano();
-
-        // Activar solo la linterna
         if (flashlight) flashlight.SetActive(true);
         if (currentStone) currentStone.SetActive(false);
         if (mapObject) mapObject.SetActive(false);
-
         Debug.Log("🔦 Equipando linterna");
-        if (flashlight != null) flashlight.SetActive(true);
-        if (currentStone != null) currentStone.SetActive(false);
-        if (mapObject != null) mapObject.SetActive(false);
     }
 
     void EquipStone()
     {
         equippedItem = Equipped.Stone;
-        // Desactivar tubos
         OcultarTubosDeLaMano();
-
-        // Activar piedra
         if (flashlight) flashlight.SetActive(false);
         if (mapObject) mapObject.SetActive(false);
 
@@ -421,7 +444,6 @@ public class PlayerMovement : MonoBehaviour
         }
 
         if (currentStone) currentStone.SetActive(true);
-
         Debug.Log("🪨 Equipando piedra");
     }
 
@@ -455,9 +477,7 @@ public class PlayerMovement : MonoBehaviour
                 stoneTrajectory.ClearTrajectory();
         }
     }
-    // ------------------------------------------------------
-    // 🧤 Oculta todos los tubos equipados actualmente
-    // ------------------------------------------------------
+
     public void OcultarTubosDeLaMano()
     {
         foreach (Transform child in holdPoint)
@@ -470,5 +490,4 @@ public class PlayerMovement : MonoBehaviour
         if (inv != null)
             inv.tuboEquipado = null;
     }
-
 }
