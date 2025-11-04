@@ -1,43 +1,59 @@
-using System.Collections.Generic;
+Ôªøusing System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
 public class PauseManager : MonoBehaviour
 {
     [Header("UI")]
-    [SerializeField] private GameObject pauseOverlay;     // Contiene Blur + Tint + Men˙
-    [SerializeField] private RawImage blurImage;          // Asigna RawImage_Blur aquÌ
+    [SerializeField] private GameObject pauseOverlay;
+    [SerializeField] private RawImage blurImage;
+    [SerializeField] private Slider volumeSlider;          // ‚Üê arrastra tu slider
 
-    [Header("C·maras / Render")]
-    [SerializeField] private Camera mainCamera;           // Tu c·mara principal
-    [SerializeField] private Camera captureCamera;        // C·mara para capturar baja res (desactivada)
-    [SerializeField] private RenderTexture lowResRT;      // 320x180 o 512x288
+    [Header("C√°maras / Render")]
+    [SerializeField] private Camera mainCamera;
+    [SerializeField] private Camera captureCamera;
+    [SerializeField] private RenderTexture lowResRT;
 
     [Header("Audio")]
-    [SerializeField] private AudioSource pauseMusic;      // M˙sica del men˙ de pausa
+    [SerializeField] private AudioSource pauseMusic;       // ‚Üê m√∫sica del men√∫ pausa
 
-    [Tooltip("Opcional: Si quieres pausar selectivamente audios que no respeten AudioListener.pause")]
-    [SerializeField] private List<AudioSource> gameplayAudioToPause = new List<AudioSource>();
+    [Header("Gameplay")]
+    [SerializeField] private FlashlightController flashlightController;
 
     private bool isPaused = false;
+    private float globalVolume = 1f;
+    private List<AudioSource> allAudioSources = new List<AudioSource>();
 
     void Awake()
     {
         if (pauseOverlay) pauseOverlay.SetActive(false);
+
         if (pauseMusic)
         {
-            // Queremos que suene aunque pausemos el AudioListener
             pauseMusic.ignoreListenerPause = true;
             pauseMusic.Stop();
         }
+
+        if (volumeSlider)
+        {
+            volumeSlider.onValueChanged.AddListener(SetGlobalVolume);
+            volumeSlider.value = 1f;
+        }
+
+        // Guardar referencia a todos los AudioSource iniciales
+        RefreshAudioSources();
     }
 
     void Update()
     {
         if (Input.GetKeyDown(KeyCode.Escape))
-        {
             TogglePause();
-        }
+    }
+
+    void RefreshAudioSources()
+    {
+        allAudioSources.Clear();
+        allAudioSources.AddRange(FindObjectsOfType<AudioSource>(true));
     }
 
     public void TogglePause()
@@ -50,47 +66,40 @@ public class PauseManager : MonoBehaviour
     {
         isPaused = true;
 
-        // 1) Capturar un frame a baja resoluciÛn para el "blur"
+        // Capturar imagen de fondo
         if (captureCamera && lowResRT && blurImage)
         {
-            // Alinear par·metros importantes por si cambiaste FOV/clipping en runtime
-            if (mainCamera)
-            {
-                captureCamera.transform.position = mainCamera.transform.position;
-                captureCamera.transform.rotation = mainCamera.transform.rotation;
-                captureCamera.fieldOfView = mainCamera.fieldOfView;
-                captureCamera.nearClipPlane = mainCamera.nearClipPlane;
-                captureCamera.farClipPlane = mainCamera.farClipPlane;
-            }
+            captureCamera.transform.SetPositionAndRotation(mainCamera.transform.position, mainCamera.transform.rotation);
+            captureCamera.fieldOfView = mainCamera.fieldOfView;
+            captureCamera.nearClipPlane = mainCamera.nearClipPlane;
+            captureCamera.farClipPlane = mainCamera.farClipPlane;
 
             captureCamera.targetTexture = lowResRT;
             captureCamera.enabled = true;
-            captureCamera.Render();        // Render: toma ìfotoî a baja resoluciÛn
-            captureCamera.enabled = false; // Volvemos a apagarla
-            blurImage.texture = lowResRT;  // Mostramos la imagen ìborrosaî
+            captureCamera.Render();
+            captureCamera.enabled = false;
+
+            blurImage.texture = lowResRT;
         }
 
-        // 2) Mostrar overlay y men˙
         if (pauseOverlay) pauseOverlay.SetActive(true);
 
-        // 3) Pausar tiempo (fÌsicas, animaciones basadas en Time.deltaTime)
         Time.timeScale = 0f;
 
-        // 4) Pausar todo el audio del juego r·pido:
-        //    AudioListener.pause detiene todos los AudioSource,
-        //    excepto aquellos con ignoreListenerPause = true (como pauseMusic).
-        AudioListener.pause = true;
-
-        // 5) Por si tienes audios fuera del listener (muy raro), pausarlos manualmente
-        foreach (var a in gameplayAudioToPause)
+        // Pausar todos los audios menos el de pausa
+        RefreshAudioSources();
+        foreach (var src in allAudioSources)
         {
-            if (a && a.isPlaying) a.Pause();
+            if (src && src.isPlaying && src != pauseMusic)
+                src.Pause();
         }
 
-        // 6) Reproducir m˙sica de pausa
-        if (pauseMusic) pauseMusic.Play();
+        if (pauseMusic)
+            pauseMusic.Play();
 
-        // 7) Mostrar cursor para navegar men˙
+        if (flashlightController)
+            flashlightController.enabled = false;
+
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
     }
@@ -99,39 +108,46 @@ public class PauseManager : MonoBehaviour
     {
         isPaused = false;
 
-        // 1) Ocultar overlay
         if (pauseOverlay) pauseOverlay.SetActive(false);
-
-        // 2) Reanudar tiempo
         Time.timeScale = 1f;
 
-        // 3) Reanudar audio global
-        AudioListener.pause = false;
-
-        // 4) Parar m˙sica de pausa
-        if (pauseMusic) pauseMusic.Stop();
-
-        // 5) Reanudar audios pausados manualmente
-        foreach (var a in gameplayAudioToPause)
+        // Reanudar audios
+        foreach (var src in allAudioSources)
         {
-            if (a) a.UnPause();
+            if (src && src != pauseMusic)
+                src.UnPause();
         }
 
-        // 6) Restaurar cursor como te guste (si usas FPS)
+        if (pauseMusic)
+            pauseMusic.Stop();
+
+        if (flashlightController)
+            flashlightController.enabled = true;
+
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
     }
 
-    // Llamar desde botÛn UI "Resume"
     public void OnResumeButton() => ResumeGame();
 
-    // Ejemplo: botÛn "Quit to Main Menu" (t˙ implementas la carga de escena)
     public void OnQuitButton()
     {
-        // Antes de cambiar de escena, aseg˙rate de restaurar estado
         Time.timeScale = 1f;
-        AudioListener.pause = false;
         if (pauseMusic) pauseMusic.Stop();
+        foreach (var src in allAudioSources)
+        {
+            if (src) src.UnPause();
+        }
         // SceneManager.LoadScene("MainMenu");
+    }
+
+    public void SetGlobalVolume(float v)
+    {
+        globalVolume = Mathf.Clamp01(v);
+        RefreshAudioSources();
+        foreach (var src in allAudioSources)
+        {
+            if (src) src.volume = globalVolume;
+        }
     }
 }
