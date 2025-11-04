@@ -66,8 +66,8 @@ public class PauseManager : MonoBehaviour
     {
         isPaused = true;
 
-        // Capturar imagen de fondo
-        if (captureCamera && lowResRT && blurImage)
+        // Capturar imagen de fondo si las cámaras y el blur están disponibles
+        if (captureCamera != null && lowResRT != null && blurImage != null && mainCamera != null)
         {
             captureCamera.transform.SetPositionAndRotation(mainCamera.transform.position, mainCamera.transform.rotation);
             captureCamera.fieldOfView = mainCamera.fieldOfView;
@@ -82,7 +82,7 @@ public class PauseManager : MonoBehaviour
             blurImage.texture = lowResRT;
         }
 
-        if (pauseOverlay) pauseOverlay.SetActive(true);
+        if (pauseOverlay != null) pauseOverlay.SetActive(true);
 
         Time.timeScale = 0f;
 
@@ -90,14 +90,15 @@ public class PauseManager : MonoBehaviour
         RefreshAudioSources();
         foreach (var src in allAudioSources)
         {
-            if (src && src.isPlaying && src != pauseMusic)
+            if (src != null && src.isPlaying && src != pauseMusic)
                 src.Pause();
         }
 
-        if (pauseMusic)
+        if (pauseMusic != null)
             pauseMusic.Play();
 
-        if (flashlightController)
+        // Desactivar FlashlightController si existe
+        if (flashlightController != null)
             flashlightController.enabled = false;
 
         Cursor.lockState = CursorLockMode.None;
@@ -108,25 +109,27 @@ public class PauseManager : MonoBehaviour
     {
         isPaused = false;
 
-        if (pauseOverlay) pauseOverlay.SetActive(false);
+        if (pauseOverlay != null) pauseOverlay.SetActive(false);
         Time.timeScale = 1f;
 
         // Reanudar audios
         foreach (var src in allAudioSources)
         {
-            if (src && src != pauseMusic)
+            if (src != null && src != pauseMusic)
                 src.UnPause();
         }
 
-        if (pauseMusic)
+        if (pauseMusic != null)
             pauseMusic.Stop();
 
-        if (flashlightController)
+        // Activar FlashlightController si existe
+        if (flashlightController != null)
             flashlightController.enabled = true;
 
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
     }
+
 
     public void OnResumeButton() => ResumeGame();
 
