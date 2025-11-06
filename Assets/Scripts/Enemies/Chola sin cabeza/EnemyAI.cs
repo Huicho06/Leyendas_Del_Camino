@@ -1,4 +1,4 @@
-using System.Collections;
+Ôªøusing System.Collections;
 using UnityEngine;
 using UnityEngine.AI;
 using UnityEngine.SceneManagement;
@@ -10,16 +10,17 @@ public class EnemyAI : MonoBehaviour
     public Transform[] patrolPoints;
     public float patrolWait = 1.5f;
 
-    [Header("DetecciÛn por oÌdo")]
-    public float hearingRange = 20f;      // distancia m·xima para oÌr
-    public float hearingThreshold = 0.5f; // intensidad mÌnima (no atenuada)
-    public float investigateTime = 4f;    // cu·nto tiempo investiga en la posiciÛn del ruido
+    [Header("Detecci√≥n por o√≠do")]
+    public float hearingRange = 20f;      // distancia m√°xima para o√≠r
+    public float hearingThreshold = 0.5f; // intensidad m√≠nima (no atenuada)
+    public float investigateTime = 4f;    // cu√°nto tiempo investiga en la posici√≥n del ruido
 
     [Header("Proximidad")]
-    public float proximityKillRange = 1.5f; // distancia a la que el jugador muere instant·neamente
+    public float proximityKillRange = 1.5f; // distancia a la que el jugador muere instant√°neamente
     public float killDelay = 0.2f;
 
     private NavMeshAgent agent;
+    private Animator anim;
     private int idx = 0;
     private Transform player;
 
@@ -29,12 +30,13 @@ public class EnemyAI : MonoBehaviour
     private Vector3 investigatePosition;
     private Coroutine investigateCoroutine;
 
-    // NUEVO: recordamos el ˙ltimo ruido "objetivo" por su ID
+    // NUEVO: recordamos el √∫ltimo ruido "objetivo" por su ID
     private int currentTargetNoiseId = -1;
 
     void Start()
     {
         agent = GetComponent<NavMeshAgent>();
+        anim = GetComponent<Animator>();
         player = GameObject.FindGameObjectWithTag("Player")?.transform;
 
         if (patrolPoints != null && patrolPoints.Length > 0)
@@ -43,6 +45,9 @@ public class EnemyAI : MonoBehaviour
 
     void Update()
     {
+        // ‚Üê NECESARIO: actualizar animaciones cada frame
+        UpdateAnimationState();
+
         if (player != null)
         {
             float distToPlayer = Vector3.Distance(transform.position, player.position);
@@ -52,11 +57,11 @@ public class EnemyAI : MonoBehaviour
             }
         }
 
-        // OÌr SOLO el ruido m·s reciente dentro de rango/umbral
+        // O√≠r SOLO el ruido m√°s reciente dentro de rango/umbral
         if (NoiseManager.Instance != null &&
             NoiseManager.Instance.GetMostRecentNoise(transform.position, hearingRange, hearingThreshold, out Vector3 pos, out int noiseId))
         {
-            // Si este ruido es nuevo (ID distinto), saltamos directo a Èl
+            // Si este ruido es nuevo (ID distinto), saltamos directo a √©l
             if (noiseId != currentTargetNoiseId)
             {
                 currentTargetNoiseId = noiseId;
@@ -66,7 +71,7 @@ public class EnemyAI : MonoBehaviour
                 }
                 else
                 {
-                    // Ya estamos investigando: redirigimos inmediatamente al nuevo ˙ltimo ruido
+                    // Ya estamos investigando: redirigimos inmediatamente al nuevo √∫ltimo ruido
                     investigatePosition = pos;
                     agent.SetDestination(investigatePosition);
                 }
@@ -82,6 +87,15 @@ public class EnemyAI : MonoBehaviour
                 StartCoroutine(WaitAndGoTo(patrolPoints[idx].position));
             }
         }
+    }
+
+    void UpdateAnimationState()
+    {
+        if (anim == null || agent == null) return;
+
+        bool walking = agent.velocity.magnitude > 0.1f;
+        anim.SetBool("isWalking", walking);
+        anim.SetBool("isIdle", !walking); // opcional
     }
 
     IEnumerator WaitAndGoTo(Vector3 dest)
@@ -108,13 +122,10 @@ public class EnemyAI : MonoBehaviour
 
         while (Time.time - start < investigateTime)
         {
-            // Si ya llegamos cerca del punto actual, paramos la investigaciÛn
+            // Si ya llegamos cerca del punto actual, paramos la investigaci√≥n
             if (!agent.pathPending && agent.remainingDistance <= agent.stoppingDistance + 0.5f)
                 break;
 
-            // Nota: si aparece un ruido m·s reciente, Update() cambiar· investigatePosition
-            // y har· agent.SetDestination(investigatePosition). No reiniciamos la corrutina,
-            // solo dejamos que siga hasta que llegue o se agote el tiempo.
             yield return null;
         }
 
