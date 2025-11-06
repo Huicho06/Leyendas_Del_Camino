@@ -1,39 +1,41 @@
-﻿    using UnityEngine;
+﻿using UnityEngine;
 
-    public class ThrowableObject : MonoBehaviour
+public class ThrowableObject : MonoBehaviour
+{
+    public float throwForce = 10f;       // fuerza al lanzar
+    public float noiseIntensity = 5f;    // ruido que genera
+    public float lifetime = 5f;          // tiempo máximo antes de destruir
+
+    private Rigidbody rb;
+    private bool hasHitGround = false;
+
+    void Start()
     {
-        public float throwForce = 10f;       // fuerza al lanzar
-        public float noiseIntensity = 5f;    // ruido que genera
-        public float lifetime = 5f;          // tiempo máximo antes de destruir
+        rb = GetComponent<Rigidbody>();
+    }
 
-        private Rigidbody rb;
-        private bool hasHitGround = false;
+    public void Throw(Vector3 direction)
+    {
+        rb.isKinematic = false;
+        rb.AddForce(direction * throwForce, ForceMode.Impulse);
+        Destroy(gameObject, lifetime);
+    }
 
-        void Start()
+    void OnCollisionEnter(Collision collision)
+    {
+        if (hasHitGround) return;
+
+        // Si choca con el suelo, genera ruido y se destruye
+        if (collision.gameObject.CompareTag("Ground"))
         {
-            rb = GetComponent<Rigidbody>();
+            hasHitGround = true;
+            NoiseManager.Instance.ReportNoise(transform.position, noiseIntensity);
+            Destroy(gameObject);
         }
-
-        public void Throw(Vector3 direction)
+        else
         {
-            rb.isKinematic = false;
-            rb.AddForce(direction * throwForce, ForceMode.Impulse);
-            Destroy(gameObject, lifetime);
-        }
-
-        void OnCollisionEnter(Collision collision)
-        {
-            if (hasHitGround) return;
-
-            if (collision.gameObject.CompareTag("Ground"))
-            {
-                hasHitGround = true;
-                NoiseManager.Instance.ReportNoise(transform.position, noiseIntensity);
-                Destroy(gameObject);
-            }
-            else
-            {
-                NoiseManager.Instance.ReportNoise(transform.position, noiseIntensity);
-            }
+            // Si golpea algo distinto del suelo, también genera ruido
+            NoiseManager.Instance.ReportNoise(transform.position, noiseIntensity);
         }
     }
+}

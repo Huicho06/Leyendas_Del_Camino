@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 7300716195489750119}
   - component: {fileID: 8112944597421035055}
+  - component: {fileID: 1395682897632959002}
   m_Layer: 0
   m_Name: Spot Light
   m_TagString: Untagged
@@ -45,9 +46,9 @@ Light:
   m_Shape: 0
   m_Color: {r: 1, g: 0.60170984, b: 0, a: 1}
   m_Intensity: 6
-  m_Range: 20
+  m_Range: 21.746271
   m_SpotAngle: 40
-  m_InnerSpotAngle: 2
+  m_InnerSpotAngle: 28.504616
   m_CookieSize: 10
   m_Shadows:
     m_Type: 1
@@ -94,6 +95,29 @@ Light:
   m_UseViewFrustumForShadowCasterCull: 1
   m_ShadowRadius: 0
   m_ShadowAngle: 0
+--- !u!114 &1395682897632959002
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1891681644923867436}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 474bcb49853aa07438625e644c072ee6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Version: 3
+  m_UsePipelineSettings: 1
+  m_AdditionalLightsShadowResolutionTier: 2
+  m_LightLayerMask: 1
+  m_RenderingLayers: 1
+  m_CustomShadowLayers: 0
+  m_ShadowLayerMask: 1
+  m_ShadowRenderingLayers: 1
+  m_LightCookieSize: {x: 1, y: 1}
+  m_LightCookieOffset: {x: 0, y: 0}
+  m_SoftShadowQuality: 0
 --- !u!1 &3174424435420217295
 GameObject:
   m_ObjectHideFlags: 0
@@ -371,6 +395,7 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 8
   stoneTrajectory: {fileID: 0}
+  animator: {fileID: 0}
   walkClips: []
   runClips: []
   jumpClip: {fileID: 0}
@@ -390,6 +415,7 @@ MonoBehaviour:
   flashlight: {fileID: 0}
   stonePrefab: {fileID: 0}
   holdPoint: {fileID: 0}
+  mapObject: {fileID: 0}
   minThrowForce: 5
   maxThrowForce: 20
   chargeSpeed: 10
@@ -578,6 +604,7 @@ MonoBehaviour:
     m_Bits: 4294967295
   playerRoot: {fileID: 0}
   toggleKey: 323
+  useClosestPoint: 1
   debugLogs: 0
   drawRays: 0
 --- !u!1 &8633937793862882470
