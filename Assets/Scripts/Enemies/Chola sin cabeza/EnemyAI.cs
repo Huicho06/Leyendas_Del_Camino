@@ -38,10 +38,13 @@ public class EnemyAI : MonoBehaviour
         agent = GetComponent<NavMeshAgent>();
         anim = GetComponent<Animator>();
         player = GameObject.FindGameObjectWithTag("Player")?.transform;
-
+        agent.speed = 3.5f;
+        agent.stoppingDistance = proximityKillRange;
         if (patrolPoints != null && patrolPoints.Length > 0)
             agent.SetDestination(patrolPoints[0].position);
     }
+
+ 
 
     void Update()
     {
