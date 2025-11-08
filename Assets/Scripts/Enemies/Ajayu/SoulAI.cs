@@ -54,7 +54,11 @@ public class SoulAI : MonoBehaviour
     bool isDissolving = false;
     float lightTimer = 0f;
     Coroutine wanderRoutine;
-
+    [Header("Efecto de visión borrosa")]
+    public UnityEngine.Rendering.Volume visionBlurVolume; // arrastra tu Volume global en el inspector
+    public float fadeInSpeed = 2f;
+    public float fadeOutSpeed = 1f;
+    public float blurDuration = 2f;
     void Awake()
     {
         if (!soulRenderer) soulRenderer = GetComponentInChildren<Renderer>();
@@ -210,6 +214,10 @@ public class SoulAI : MonoBehaviour
         if (isDissolving) yield break;
         isDissolving = true;
 
+        // 🔮 --- EFECTO VISUAL: visión borrosa ---
+        if (PlayerVisionEffect.instance != null)
+            PlayerVisionEffect.instance.TriggerBlur(blurDuration);
+
         if (player != null)
         {
             var move = player.GetComponent<PlayerMovement>();
@@ -230,7 +238,33 @@ public class SoulAI : MonoBehaviour
 
         yield return StartCoroutine(DissolveAndDestroy());
     }
+    private IEnumerator ApplyBlurEffect()
+    {
+        if (visionBlurVolume == null)
+            yield break;
 
+        float weight = 0f;
+
+        // fade-in
+        while (weight < 1f)
+        {
+            weight += Time.deltaTime * fadeInSpeed;
+            visionBlurVolume.weight = weight;
+            yield return null;
+        }
+
+        yield return new WaitForSeconds(blurDuration);
+
+        // fade-out
+        while (weight > 0f)
+        {
+            weight -= Time.deltaTime * fadeOutSpeed;
+            visionBlurVolume.weight = weight;
+            yield return null;
+        }
+
+        visionBlurVolume.weight = 0f;
+    }
     IEnumerator DissolveAndDestroy()
     {
         isDissolving = true;
