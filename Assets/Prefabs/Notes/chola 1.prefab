@@ -15,7 +15,7 @@ GameObject:
   - component: {fileID: 7826726176988344853}
   - component: {fileID: 1793685296746447516}
   m_Layer: 0
-  m_Name: Note
+  m_Name: chola 1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -65,7 +65,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: cba1176e6726d5d4e96edeae9be54af6, type: 2}
+  - {fileID: 2100000, guid: a067d0cfec6ef9741a914a7c66af5057, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
