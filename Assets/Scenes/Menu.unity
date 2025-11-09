@@ -1551,7 +1551,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 1393750743}
         m_TargetAssemblyTypeName: LoadSceneNames, Assembly-CSharp
-        m_MethodName: SceneTransision
+        m_MethodName: SceneScene1
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
