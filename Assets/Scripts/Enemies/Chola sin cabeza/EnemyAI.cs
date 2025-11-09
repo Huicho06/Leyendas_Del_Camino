@@ -1,3 +1,5 @@
+Ôªø
+
 using System.Collections;
 using UnityEngine;
 using UnityEngine.AI;
@@ -10,16 +12,25 @@ public class EnemyAI : MonoBehaviour
     public Transform[] patrolPoints;
     public float patrolWait = 1.5f;
 
-    [Header("DetecciÛn por oÌdo")]
-    public float hearingRange = 20f;      // distancia m·xima para oÌr
-    public float hearingThreshold = 0.5f; // intensidad mÌnima (no atenuada)
-    public float investigateTime = 4f;    // cu·nto tiempo investiga en la posiciÛn del ruido
+    [Header("Detecci√≥n por o√≠do")]
+    public float hearingRange = 20f;      // distancia m√°xima para o√≠r
+    public float hearingThreshold = 0.5f; // intensidad m√≠nima (no atenuada)
+    public float investigateTime = 4f;    // cu√°nto tiempo investiga en la posici√≥n del ruido
 
     [Header("Proximidad")]
-    public float proximityKillRange = 1.5f; // distancia a la que el jugador muere instant·neamente
+    public float proximityKillRange = 1.5f; // distancia a la que el jugador muere instant√°neamente
     public float killDelay = 0.2f;
 
+    [Header("Teletransporte sigiloso")]
+    public float teleportCooldown = 8f;       // segundos entre teletransportes
+    public float teleportDistance = 10f;      // distancia m√°xima detr√°s del jugador
+    public float minTeleportRange = 5f;       // distancia m√≠nima de aparici√≥n
+    public float teleportHeightOffset = 0.5f; // para evitar clip con el suelo
+
+    private float lastTeleportTime = -Mathf.Infinity;
+
     private NavMeshAgent agent;
+    private Animator anim;
     private int idx = 0;
     private Transform player;
 
@@ -29,20 +40,24 @@ public class EnemyAI : MonoBehaviour
     private Vector3 investigatePosition;
     private Coroutine investigateCoroutine;
 
-    // NUEVO: recordamos el ˙ltimo ruido "objetivo" por su ID
+    // recordamos el √∫ltimo ruido objetivo
     private int currentTargetNoiseId = -1;
 
     void Start()
     {
         agent = GetComponent<NavMeshAgent>();
+        anim = GetComponent<Animator>();
         player = GameObject.FindGameObjectWithTag("Player")?.transform;
-
+        agent.speed = 3.5f;
+        agent.stoppingDistance = proximityKillRange;
         if (patrolPoints != null && patrolPoints.Length > 0)
             agent.SetDestination(patrolPoints[0].position);
     }
 
     void Update()
     {
+        UpdateAnimationState();
+
         if (player != null)
         {
             float distToPlayer = Vector3.Distance(transform.position, player.position);
@@ -52,11 +67,10 @@ public class EnemyAI : MonoBehaviour
             }
         }
 
-        // OÌr SOLO el ruido m·s reciente dentro de rango/umbral
+        // detecci√≥n de ruido
         if (NoiseManager.Instance != null &&
             NoiseManager.Instance.GetMostRecentNoise(transform.position, hearingRange, hearingThreshold, out Vector3 pos, out int noiseId))
         {
-            // Si este ruido es nuevo (ID distinto), saltamos directo a Èl
             if (noiseId != currentTargetNoiseId)
             {
                 currentTargetNoiseId = noiseId;
@@ -66,14 +80,13 @@ public class EnemyAI : MonoBehaviour
                 }
                 else
                 {
-                    // Ya estamos investigando: redirigimos inmediatamente al nuevo ˙ltimo ruido
                     investigatePosition = pos;
                     agent.SetDestination(investigatePosition);
                 }
             }
         }
 
-        // Patrulla
+        // patrulla
         if (state == State.Patrolling && !agent.pathPending)
         {
             if (agent.remainingDistance <= agent.stoppingDistance)
@@ -82,6 +95,18 @@ public class EnemyAI : MonoBehaviour
                 StartCoroutine(WaitAndGoTo(patrolPoints[idx].position));
             }
         }
+
+        // teletransporte sigiloso (nuevo)
+        TryTeleportNearPlayer();
+    }
+
+    void UpdateAnimationState()
+    {
+        if (anim == null || agent == null) return;
+
+        bool walking = agent.velocity.magnitude > 0.1f;
+        anim.SetBool("isWalking", walking);
+        anim.SetBool("isIdle", !walking);
     }
 
     IEnumerator WaitAndGoTo(Vector3 dest)
@@ -108,13 +133,9 @@ public class EnemyAI : MonoBehaviour
 
         while (Time.time - start < investigateTime)
         {
-            // Si ya llegamos cerca del punto actual, paramos la investigaciÛn
             if (!agent.pathPending && agent.remainingDistance <= agent.stoppingDistance + 0.5f)
                 break;
 
-            // Nota: si aparece un ruido m·s reciente, Update() cambiar· investigatePosition
-            // y har· agent.SetDestination(investigatePosition). No reiniciamos la corrutina,
-            // solo dejamos que siga hasta que llegue o se agote el tiempo.
             yield return null;
         }
 
@@ -133,6 +154,38 @@ public class EnemyAI : MonoBehaviour
         if (cc != null) cc.enabled = false;
 
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+    }
+
+    // --- NUEVAS FUNCIONES ---
+
+    bool PlayerIsLookingAtEnemy()
+    {
+        if (player == null) return false;
+
+        Vector3 dirToEnemy = (transform.position - player.position).normalized;
+        float angle = Vector3.Angle(player.forward, dirToEnemy);
+
+        // si est√° dentro de 50¬∞, consideramos que el jugador la ve
+        return angle < 50f;
+    }
+
+    void TryTeleportNearPlayer()
+    {
+        if (player == null) return;
+        if (Time.time - lastTeleportTime < teleportCooldown) return;
+        if (PlayerIsLookingAtEnemy()) return; // no se teletransporta si la ves
+
+        Vector3 randomDir = -player.forward + new Vector3(Random.Range(-0.5f, 0.5f), 0, Random.Range(-0.5f, 0.5f));
+        randomDir.Normalize();
+
+        Vector3 targetPos = player.position + randomDir * Random.Range(minTeleportRange, teleportDistance);
+        targetPos.y += teleportHeightOffset;
+
+        if (NavMesh.SamplePosition(targetPos, out NavMeshHit hit, 2f, NavMesh.AllAreas))
+        {
+            transform.position = hit.position;
+            lastTeleportTime = Time.time;
+        }
     }
 
     void OnDrawGizmosSelected()

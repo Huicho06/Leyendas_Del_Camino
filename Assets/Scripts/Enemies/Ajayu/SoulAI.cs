@@ -1,5 +1,6 @@
 ﻿
 using System.Collections;
+
 using System.Linq;
 using UnityEngine;
 using UnityEngine.AI;
@@ -55,6 +56,12 @@ public class SoulAI : MonoBehaviour
     float lightTimer = 0f;
     Coroutine wanderRoutine;
 
+    [Header("Efecto de visión borrosa")]
+    public UnityEngine.Rendering.Volume visionBlurVolume;
+    public float fadeInSpeed = 2f;
+    public float fadeOutSpeed = 1f;
+    public float blurDuration = 2f;
+
     void Awake()
     {
         if (!soulRenderer) soulRenderer = GetComponentInChildren<Renderer>();
@@ -94,15 +101,19 @@ public class SoulAI : MonoBehaviour
 
     void HandleTrueSoul(float dist)
     {
+        // Empieza a cantar si el jugador está cerca
         if (!hasStartedSinging && dist <= hearingDistance)
         {
             hasStartedSinging = true;
+            Debug.Log("💫 Alma buena empieza a cantar");
             if (playOnApproach && voiceClip) StartSinging();
         }
 
+        // Detecta al jugador a distancia más corta
         if (!hasDetectedPlayer && dist <= detectionDistance)
         {
             hasDetectedPlayer = true;
+            Debug.Log("👁️ Alma detectó al jugador");
             StopSinging();
             if (soulAnimator) soulAnimator.SetTrigger("OnDetectPlayer");
             if (memoryAnimator) memoryAnimator.SetTrigger("OnDetectPlayer");
@@ -135,6 +146,7 @@ public class SoulAI : MonoBehaviour
         yield return new WaitForSeconds(delay);
         if (isTrueSoul)
         {
+            // Reanuda el canto después de la animación
             if (playOnApproach && voiceClip) StartSinging();
             if (pathFollower) pathFollower.BeginRoute();
         }
@@ -182,6 +194,7 @@ public class SoulAI : MonoBehaviour
         if (illuminated && isTrueSoul && voiceClip && !audioSource.isPlaying)
         {
             audioSource.clip = voiceClip;
+            audioSource.loop = true;
             audioSource.Play();
         }
 
@@ -210,6 +223,9 @@ public class SoulAI : MonoBehaviour
         if (isDissolving) yield break;
         isDissolving = true;
 
+        if (PlayerVisionEffect.instance != null)
+            PlayerVisionEffect.instance.TriggerBlur(blurDuration);
+
         if (player != null)
         {
             var move = player.GetComponent<PlayerMovement>();
@@ -221,7 +237,7 @@ public class SoulAI : MonoBehaviour
                 move.walkSpeed *= 0.5f;
                 move.runSpeed *= 0.5f;
 
-                yield return new WaitForSeconds(5f); // ralentización temporal
+                yield return new WaitForSeconds(5f);
 
                 move.walkSpeed = originalWalk;
                 move.runSpeed = originalRun;
@@ -229,6 +245,32 @@ public class SoulAI : MonoBehaviour
         }
 
         yield return StartCoroutine(DissolveAndDestroy());
+    }
+
+    private IEnumerator ApplyBlurEffect()
+    {
+        if (visionBlurVolume == null)
+            yield break;
+
+        float weight = 0f;
+
+        while (weight < 1f)
+        {
+            weight += Time.deltaTime * fadeInSpeed;
+            visionBlurVolume.weight = weight;
+            yield return null;
+        }
+
+        yield return new WaitForSeconds(blurDuration);
+
+        while (weight > 0f)
+        {
+            weight -= Time.deltaTime * fadeOutSpeed;
+            visionBlurVolume.weight = weight;
+            yield return null;
+        }
+
+        visionBlurVolume.weight = 0f;
     }
 
     IEnumerator DissolveAndDestroy()
@@ -263,6 +305,7 @@ public class SoulAI : MonoBehaviour
         {
             audioSource.clip = voiceClip;
             audioSource.loop = true;
+            audioSource.spatialBlend = 1f; // 3D
             audioSource.Play();
         }
     }
@@ -270,5 +313,15 @@ public class SoulAI : MonoBehaviour
     public void StopSinging()
     {
         if (audioSource) audioSource.Stop();
+    }
+
+    // --- Dibujar los rangos en la escena ---
+    void OnDrawGizmosSelected()
+    {
+        Gizmos.color = isTrueSoul ? new Color(0.3f, 1f, 0.6f, 0.3f) : new Color(1f, 0.3f, 0.3f, 0.3f);
+        Gizmos.DrawWireSphere(transform.position, hearingDistance);
+
+        Gizmos.color = Color.yellow;
+        Gizmos.DrawWireSphere(transform.position, detectionDistance);
     }
 }

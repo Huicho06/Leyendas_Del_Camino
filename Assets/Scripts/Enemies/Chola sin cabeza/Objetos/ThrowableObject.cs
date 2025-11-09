@@ -1,10 +1,10 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 public class ThrowableObject : MonoBehaviour
 {
     public float throwForce = 10f;       // fuerza al lanzar
     public float noiseIntensity = 5f;    // ruido que genera
-    public float lifetime = 5f;          // tiempo m�ximo antes de destruir
+    public float lifetime = 5f;          // tiempo máximo antes de destruir
 
     private Rigidbody rb;
     private bool hasHitGround = false;
@@ -25,6 +25,7 @@ public class ThrowableObject : MonoBehaviour
     {
         if (hasHitGround) return;
 
+        // Si choca con el suelo, genera ruido y se destruye
         if (collision.gameObject.CompareTag("Ground"))
         {
             hasHitGround = true;
@@ -33,6 +34,7 @@ public class ThrowableObject : MonoBehaviour
         }
         else
         {
+            // Si golpea algo distinto del suelo, también genera ruido
             NoiseManager.Instance.ReportNoise(transform.position, noiseIntensity);
         }
     }
