@@ -13,17 +13,27 @@ public class SilbonAI : MonoBehaviour
     [Header("Patrulla")]
     public Transform[] patrolPoints;
     public float patrolWait = 1.5f;
-    public float patrolSpeed = 3.5f;
-    public float investigateSpeed = 4.5f;
+    public float patrolSpeed = 4.5f;        // más rápido
+    public float investigateSpeed = 6.5f;   // más rápido
 
     [Header("Detección por oído")]
     public float hearingRange = 20f;
     [Range(0f, 5f)] public float hearingThreshold = 0.5f;
     public float investigateTime = 4f;
 
+    [Header("Sensibilidad según movimiento del jugador")]
+    [Tooltip("Multiplicadores sobre el rango base según cómo se mueve el jugador")]
+    public float runHearingMultiplier = 2.0f;
+    public float walkHearingMultiplier = 1.0f;
+    public float crouchHearingMultiplier = 0.4f;
+    [Tooltip("Velocidad estimada a partir de la cual consideramos que está caminando")]
+    public float walkSpeedThreshold = 1.3f;
+    [Tooltip("Velocidad estimada a partir de la cual consideramos que está corriendo")]
+    public float runSpeedThreshold = 3.0f;
+
     [Header("Visión (FOV)")]
-    public float viewRange = 18f;
-    [Range(1f, 180f)] public float viewFOV = 70f;
+    public float viewRange = 25f; // mayor rango de visión
+    [Range(1f, 180f)] public float viewFOV = 85f; // más amplio
     [Tooltip("Capas que bloquean la vista (paredes/suelo). NO incluyas la capa del Player.")]
     public LayerMask obstacleMask = ~0;
 
@@ -44,18 +54,18 @@ public class SilbonAI : MonoBehaviour
     public int lowPassCutoffFar = 5000;
 
     [Header("Persecución por linterna/visión")]
-    public float chaseSpeed = 7f;
-    public float chaseDuration = 5f;
+    public float chaseSpeed = 10f; // mucho más rápido
+    public float chaseDuration = 6f;
     public float chaseCooldown = 0.3f;
     public float sightMemoryTime = 0.6f;
-
     [Tooltip("Si el agro fue por linterna y pierdo visión mientras el jugador está AGACHADO, corto el agro rápido.")]
     public float crouchAgroDropDelay = 0.35f;
 
     [Header("Retorno a patrulla")]
-    public float returnToPatrolDelay = 3f;   // ← nuevo: si no hay estímulos, vuelve a patrullar
+    public float returnToPatrolDelay = 3f;
 
     private NavMeshAgent agent;
+    private Animator animator;
     private int patrolIndex = 0;
 
     private enum State { Patrolling, Investigating, Chasing }
@@ -75,15 +85,15 @@ public class SilbonAI : MonoBehaviour
     private float lastChaseTriggerTime = -999f;
     private float lastSeenLightTime = -999f;
     private float lastSeenPlayerTime = -999f;
-
-    // ← nuevo: timestamp del último estímulo (ver/oír/linterna)
     private float lastStimulusTime = 0f;
 
+    // referencia al movimiento del jugador (si lo tiene)
     private PlayerMovement playerMove;
 
     void Awake()
     {
         agent = GetComponent<NavMeshAgent>();
+        animator = GetComponent<Animator>();
 
         if (!player)
         {
@@ -93,6 +103,7 @@ public class SilbonAI : MonoBehaviour
 
         if (player) playerMove = player.GetComponent<PlayerMovement>();
 
+        // audio
         whistleSource = GetComponent<AudioSource>();
         if (!whistleSource) whistleSource = gameObject.AddComponent<AudioSource>();
         whistleSource.playOnAwake = false;
@@ -133,78 +144,87 @@ public class SilbonAI : MonoBehaviour
         if (whistleClip != null)
             StartCoroutine(WhistleLoop());
 
-        lastStimulusTime = Time.time; // ← nuevo
+        lastStimulusTime = Time.time;
     }
 
     void Update()
     {
         if (!agent) return;
 
-        // Kill por proximidad
-        if (player)
-        {
-            float distToPlayer = Vector3.Distance(transform.position, player.position);
-            if (distToPlayer <= proximityKillRange)
-                StartCoroutine(KillPlayer());
-        }
+        // animación
+        bool isWalking = agent.velocity.magnitude > 0.1f && agent.remainingDistance > agent.stoppingDistance;
+        if (animator) animator.SetBool("isWalking", isWalking);
 
-        // VISIÓN: ¿lo veo ahora?
+        // matar por proximidad
+        if (player && Vector3.Distance(transform.position, player.position) <= proximityKillRange)
+            StartCoroutine(KillPlayer());
+
+        // VISIÓN
         bool los = CanSeePlayer();
         if (los)
         {
             lastSeenPlayerTime = Time.time;
-            lastStimulusTime = Time.time; // ← nuevo
-        }
+            lastStimulusTime = Time.time;
 
-        // Prioridad: CHASING
-        if (state == State.Chasing)
-        {
-            agent.isStopped = false;
-            agent.speed = chaseSpeed;
-            if (player) agent.SetDestination(player.position);
-
-            bool sawRecently = (Time.time - lastSeenPlayerTime) <= sightMemoryTime;
-            bool stillAgro = los || sawRecently || (Time.time < chaseEndTime);
-
-            // Si el agro fue por LINTERNA y el jugador está en sigilo (agachado) y ya NO hay visión,
-            // soltamos el agro más rápido.
-            if (agro == Agro.Light && !los && IsPlayerCrouching() && (Time.time - lastSeenLightTime) > crouchAgroDropDelay)
-                stillAgro = false;
-
-            if (!stillAgro)
+            if (state != State.Chasing)
             {
-                agro = Agro.None;
-                state = State.Patrolling;
-                agent.speed = patrolSpeed;
-                if (patrolPoints != null && patrolPoints.Length > 0)
-                    agent.SetDestination(patrolPoints[patrolIndex].position);
-            }
-
-            return;
-        }
-
-        // Si lo veo y no estaba persiguiendo → comienzo persecución (por visión)
-        if (los && state != State.Chasing)
-        {
-            BeginChase(Agro.Sight);
-            return;
-        }
-
-        // Oír SOLO el último ruido (si existe NoiseManager)
-        if (NoiseManager.Instance != null &&
-            NoiseManager.Instance.GetMostRecentNoise(transform.position, hearingRange, hearingThreshold,
-                                                     out Vector3 pos, out int noiseId))
-        {
-            if (noiseId != currentTargetNoiseId)
-            {
-                currentTargetNoiseId = noiseId;
-                lastStimulusTime = Time.time; // ← nuevo
-                if (state != State.Investigating) StartInvestigate(pos);
-                else { investigatePosition = pos; agent.SetDestination(investigatePosition); }
+                BeginChase(Agro.Sight);
+                return;
             }
         }
 
-        // Si lleva mucho sin estímulos y no está patrullando → vuelve a patrullar
+        // AUDICIÓN (solo si NO lo ve)
+        if (!los && NoiseManager.Instance != null)
+        {
+            // calculamos la distancia de oído según cómo se mueve el jugador
+            float currentHearingRange = hearingRange;
+
+            // velocidad real del jugador
+            float playerSpeed = GetPlayerSpeed();
+            bool isCrouching = IsPlayerCrouching();
+
+            if (isCrouching)
+            {
+                currentHearingRange *= crouchHearingMultiplier;
+            }
+            else if (playerSpeed >= runSpeedThreshold)
+            {
+                currentHearingRange *= runHearingMultiplier;
+            }
+            else if (playerSpeed >= walkSpeedThreshold)
+            {
+                currentHearingRange *= walkHearingMultiplier;
+            }
+            else
+            {
+                // casi quieto → se oye muy poco
+                currentHearingRange *= 0.3f;
+            }
+
+            if (NoiseManager.Instance.GetMostRecentNoise(
+                transform.position, currentHearingRange, hearingThreshold,
+                out Vector3 pos, out int noiseId))
+            {
+                if (noiseId != currentTargetNoiseId)
+                {
+                    currentTargetNoiseId = noiseId;
+                    lastStimulusTime = Time.time;
+
+                    if (state != State.Investigating && state != State.Chasing)
+                    {
+                        StartInvestigate(pos);
+                        return;
+                    }
+                    else if (state == State.Investigating)
+                    {
+                        investigatePosition = pos;
+                        agent.SetDestination(investigatePosition);
+                    }
+                }
+            }
+        }
+
+        // volver a patrullar
         if (state != State.Patrolling && (Time.time - lastStimulusTime) > returnToPatrolDelay)
         {
             agro = Agro.None;
@@ -214,7 +234,7 @@ public class SilbonAI : MonoBehaviour
                 agent.SetDestination(patrolPoints[patrolIndex].position);
         }
 
-        // Patrulla
+        // patrulla
         if (state == State.Patrolling && !agent.pathPending && patrolPoints != null && patrolPoints.Length > 0)
         {
             if (agent.remainingDistance <= agent.stoppingDistance + 0.05f)
@@ -223,8 +243,51 @@ public class SilbonAI : MonoBehaviour
                 StartCoroutine(WaitAndGoTo(patrolPoints[patrolIndex].position));
             }
         }
+
+        // persecución: seguir al jugador
+        if (state == State.Chasing && player)
+        {
+            agent.SetDestination(player.position);
+            if (Time.time > chaseEndTime)
+            {
+                state = State.Patrolling;
+                agent.speed = patrolSpeed;
+            }
+        }
     }
 
+    // ------------------------------------------------------------
+    // UTILIDADES DEL JUGADOR
+    // ------------------------------------------------------------
+    float GetPlayerSpeed()
+    {
+        if (!player) return 0f;
+
+        // primero probar rigidbody
+        Rigidbody rb = player.GetComponent<Rigidbody>();
+        if (rb) return rb.velocity.magnitude;
+
+        // luego charactercontroller
+        CharacterController cc = player.GetComponent<CharacterController>();
+        if (cc) return cc.velocity.magnitude;
+
+        // si no hay nada, 0
+        return 0f;
+    }
+
+    bool IsPlayerCrouching()
+    {
+        if (playerMove != null)
+        {
+            // tu PlayerMovement sí parece tener IsCrouching
+            return playerMove.IsCrouching;
+        }
+        return false;
+    }
+
+    // ------------------------------------------------------------
+    // VISIÓN
+    // ------------------------------------------------------------
     bool CanSeePlayer()
     {
         if (!player) return false;
@@ -233,37 +296,34 @@ public class SilbonAI : MonoBehaviour
         if (hideSys && hideSys.IsHidden) return false;
 
         Vector3 origin = transform.position + Vector3.up * 1.6f;
-        Vector3 toPlayer = (player.position - origin);
+        Vector3 toPlayer = (player.position + Vector3.up * 1.2f) - origin;
         float dist = toPlayer.magnitude;
         if (dist > viewRange) return false;
 
         Vector3 dir = toPlayer.normalized;
         float angle = Vector3.Angle(transform.forward, dir);
-        if (angle > viewFOV * 0.5f) return false; // fuera del cono
+        if (angle > viewFOV * 0.5f) return false;
 
-        // Raycast de línea de visión (bloqueos)
+        // raycast para saber si hay pared en medio
         if (Physics.Raycast(origin, dir, out RaycastHit hit, dist, ~0, QueryTriggerInteraction.Ignore))
         {
-            // Si lo primero que golpeo no es el player, o su layer está en obstacleMask → bloqueado
+            // si lo que golpeo NO es el player → no lo veo
             if (!hit.collider.transform.IsChildOf(player)) return false;
+            // si la capa del hit está marcada como obstáculo → no lo veo
             if (((1 << hit.collider.gameObject.layer) & obstacleMask) != 0) return false;
         }
 
         return true;
     }
 
-    bool IsPlayerCrouching()
-    {
-        if (!playerMove && player) playerMove = player.GetComponent<PlayerMovement>();
-        return playerMove ? playerMove.IsCrouching : false;
-    }
+    // ------------------------------------------------------------
 
     void BeginChase(Agro cause)
     {
         agro = cause;
         state = State.Chasing;
         chaseEndTime = Time.time + Mathf.Max(0.5f, chaseDuration);
-        lastStimulusTime = Time.time; // ← nuevo
+        lastStimulusTime = Time.time;
 
         if (!player)
         {
@@ -307,14 +367,12 @@ public class SilbonAI : MonoBehaviour
 
         while (Time.time - start < investigateTime)
         {
-            // Si durante la investigación lo veo → persecución
             if (CanSeePlayer())
             {
                 BeginChase(Agro.Sight);
                 yield break;
             }
 
-            // Si pasan X s sin estímulos → regresar a patrulla
             if ((Time.time - lastStimulusTime) > returnToPatrolDelay) break;
 
             if (!agent.pathPending && agent.remainingDistance <= agent.stoppingDistance + 0.5f) break;
@@ -326,12 +384,84 @@ public class SilbonAI : MonoBehaviour
         if (patrolPoints != null && patrolPoints.Length > 0)
             agent.SetDestination(patrolPoints[patrolIndex].position);
     }
-
     IEnumerator KillPlayer()
     {
         if (!player) yield break;
-        yield return new WaitForSeconds(killDelay);
+
+        // ✅ Detener por completo al Silbón
+        if (agent)
+        {
+            agent.isStopped = true;
+            agent.velocity = Vector3.zero;
+            yield return new WaitForSeconds(0.05f); // pequeño delay para asegurar que se frene
+            agent.enabled = false;
+        }
+
+        // ✅ Asegurarse de que el Silbón no empuje físicamente
+        Rigidbody rb = GetComponent<Rigidbody>();
+        if (rb)
+        {
+            rb.velocity = Vector3.zero;
+            rb.isKinematic = true;
+        }
+
+        // ✅ Girar el Silbón hacia el jugador (mirada ligeramente elevada)
+        Vector3 lookDir = (player.position - transform.position);
+        lookDir.y += 1.2f; // 👁️ ahora mira más arriba (a la cara del jugador)
+        lookDir.Normalize();
+
+        Quaternion targetRot = Quaternion.LookRotation(lookDir);
+        float rotateSpeed = 5f;
+        float rotTime = 0f;
+        while (rotTime < 0.6f)
+        {
+            rotTime += Time.deltaTime * rotateSpeed;
+            transform.rotation = Quaternion.Slerp(transform.rotation, targetRot, rotTime);
+            yield return null;
+        }
+
+        // ✅ Hacer que la cámara del jugador mire hacia el rostro del Silbón
+        Camera playerCam = Camera.main;
+        if (playerCam != null)
+        {
+            float t = 0f;
+            Quaternion startRot = playerCam.transform.rotation;
+
+            // Subimos la altura del punto de mira del Silbón para apuntar más arriba
+            Vector3 targetPos = transform.position + Vector3.up * 2.4f; // 👈 más alto que antes
+            Quaternion endRot = Quaternion.LookRotation(targetPos - playerCam.transform.position);
+
+            while (t < 1f)
+            {
+                t += Time.deltaTime * 1.2f;
+                playerCam.transform.rotation = Quaternion.Slerp(startRot, endRot, t);
+                yield return null;
+            }
+        }
+
+        // ✅ Reproducir animación (solo si existe el parámetro)
+        if (animator)
+        {
+            // Evitamos el error si no existe el parámetro
+            if (HasAnimatorParameter(animator, "Attack"))
+                animator.SetTrigger("Attack");
+        }
+
+        // ✅ Espera unos segundos para simular la "cinemática"
+        yield return new WaitForSeconds(2.8f);
+
+        // ✅ Reinicia la escena
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+    }
+
+    bool HasAnimatorParameter(Animator anim, string paramName)
+    {
+        foreach (AnimatorControllerParameter p in anim.parameters)
+        {
+            if (p.name == paramName)
+                return true;
+        }
+        return false;
     }
 
     IEnumerator WhistleLoop()
@@ -362,7 +492,7 @@ public class SilbonAI : MonoBehaviour
     public void OnLitByFlashlight(Transform lightSource, float intensity = 1f)
     {
         lastSeenLightTime = Time.time;
-        lastStimulusTime = Time.time; // ← nuevo
+        lastStimulusTime = Time.time;
         if (Time.time < lastChaseTriggerTime + chaseCooldown) return;
 
         lastChaseTriggerTime = Time.time;
@@ -371,13 +501,11 @@ public class SilbonAI : MonoBehaviour
 
     void OnDrawGizmosSelected()
     {
-        // Oído y kill
         Gizmos.color = Color.yellow;
         Gizmos.DrawWireSphere(transform.position, hearingRange);
         Gizmos.color = Color.red;
         Gizmos.DrawWireSphere(transform.position, proximityKillRange);
 
-        // Visión
         Gizmos.color = new Color(0f, 1f, 0f, 0.2f);
         Vector3 left = Quaternion.Euler(0, -viewFOV * 0.5f, 0) * transform.forward;
         Vector3 right = Quaternion.Euler(0, viewFOV * 0.5f, 0) * transform.forward;

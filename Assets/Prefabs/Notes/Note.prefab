@@ -31,7 +31,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 12.2, y: 1.34, z: 0}
-  m_LocalScale: {x: 0.61595, y: 0.047590833, z: 0.4601484}
+  m_LocalScale: {x: 0.4134564, y: 0.047590833, z: 0.4601484}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 6641079361128468037}
@@ -136,10 +136,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0046ef3e890557f4a857c2dea274cd94, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  noteUI: {fileID: 0}
-  noteText: {fileID: 0}
-  noteImage: {fileID: 0}
-  interactionText: {fileID: 0}
   noteContent: "\u201CMi nombre fue Mateo Vargas.  \r\nEn la sequ\xEDa de 1832 vi
     morir a mis hijos, y con ellos, la fe.  \r\nLos ricos ten\xEDan grasa, los pobres
     solo hueso.  \r\nUn hombre vestido de blanco me habl\xF3 de curas, de una ciencia
@@ -150,7 +146,9 @@ MonoBehaviour:
     otra clase de hambre.  \r\n\r\nAhora me llaman Kharisiri.  \r\nY a\xFAn busco,
     no grasa\u2026 sino perd\xF3n.\u201D  \r\n\n"
   noteSprite: {fileID: 21300000, guid: 291e5d23598c68e49946d63e6012a9cf, type: 3}
-  playerControl: {fileID: 0}
+  noteUI: {fileID: 0}
+  noteText: {fileID: 0}
+  noteImage: {fileID: 0}
 --- !u!1 &4288625836513098630
 GameObject:
   m_ObjectHideFlags: 0
@@ -161,6 +159,7 @@ GameObject:
   m_Component:
   - component: {fileID: 6641079361128468037}
   - component: {fileID: 3185053262474869722}
+  - component: {fileID: 8142831380902427847}
   m_Layer: 0
   m_Name: Spot Light
   m_TagString: Untagged
@@ -195,7 +194,7 @@ Light:
   m_Type: 2
   m_Shape: 0
   m_Color: {r: 0.8396226, g: 0.510651, b: 0.1782218, a: 1}
-  m_Intensity: 3
+  m_Intensity: 0.1
   m_Range: 0.4403736
   m_SpotAngle: 92
   m_InnerSpotAngle: 21.80208
@@ -245,3 +244,26 @@ Light:
   m_UseViewFrustumForShadowCasterCull: 1
   m_ShadowRadius: 0
   m_ShadowAngle: 0
+--- !u!114 &8142831380902427847
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4288625836513098630}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 474bcb49853aa07438625e644c072ee6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Version: 3
+  m_UsePipelineSettings: 1
+  m_AdditionalLightsShadowResolutionTier: 2
+  m_LightLayerMask: 1
+  m_RenderingLayers: 1
+  m_CustomShadowLayers: 0
+  m_ShadowLayerMask: 1
+  m_ShadowRenderingLayers: 1
+  m_LightCookieSize: {x: 1, y: 1}
+  m_LightCookieOffset: {x: 0, y: 0}
+  m_SoftShadowQuality: 0

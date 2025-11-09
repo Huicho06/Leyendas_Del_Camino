@@ -3,32 +3,7 @@ guid: eb7b7e1019c3faa4d9824e74029ea2a2
 ModelImporter:
   serializedVersion: 22200
   internalIDToNameTable: []
-  externalObjects:
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: tripo_mat_aa754997
-    second: {fileID: 2100000, guid: 04b885b700dbd5b4b8470c9dde1d8b14, type: 2}
-  - first:
-      type: UnityEngine:Texture2D
-      assembly: UnityEngine.CoreModule
-      name: tripo_image_aa754997-a209-493c-9ca2-32365818744f_Metallic
-    second: {fileID: 2800000, guid: 057f7456613149a459ed181f1153a3ae, type: 3}
-  - first:
-      type: UnityEngine:Texture2D
-      assembly: UnityEngine.CoreModule
-      name: tripo_image_aa754997-a209-493c-9ca2-32365818744f_Roughness
-    second: {fileID: 2800000, guid: a2f5263fb5b1b5c4e87f2ac2c4172b9b, type: 3}
-  - first:
-      type: UnityEngine:Texture2D
-      assembly: UnityEngine.CoreModule
-      name: tripo_image_aa754997_0
-    second: {fileID: 2800000, guid: 7a00cbb4e2bbc6d41946d7722564d365, type: 3}
-  - first:
-      type: UnityEngine:Texture2D
-      assembly: UnityEngine.CoreModule
-      name: tripo_image_aa754997_2
-    second: {fileID: 2800000, guid: 3b1907608d62d89438a831eaddfedc4f, type: 3}
+  externalObjects: {}
   materials:
     materialImportMode: 2
     materialName: 0
@@ -61,7 +36,7 @@ ModelImporter:
   meshes:
     lODScreenPercentages: []
     globalScale: 1
-    meshCompression: 3
+    meshCompression: 0
     addColliders: 0
     useSRGBMaterialColor: 1
     sortHierarchyByName: 1
@@ -95,7 +70,7 @@ ModelImporter:
     useFileScale: 1
     strictVertexDataChecks: 0
   tangentSpace:
-    normalSmoothAngle: 61
+    normalSmoothAngle: 60
     normalImportMode: 0
     tangentImportMode: 3
     normalCalculationMode: 4

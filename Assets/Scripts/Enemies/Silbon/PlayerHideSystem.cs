@@ -1,4 +1,4 @@
-using System.Collections;
+ï»¿using System.Collections;
 using UnityEngine;
 
 [DisallowMultipleComponent]
@@ -17,10 +17,11 @@ public class PlayerHideSystem : MonoBehaviour
 
     [Header("Ajustes")]
     public KeyCode interactKey = KeyCode.E;
-    public float moveDuration = 0.35f;     // tiempo de transición a la posición de ocultarse
+    public float moveDuration = 0.35f;     // tiempo de transiciÃ³n a la posiciÃ³n de ocultarse
     public float exitDuration = 0.25f;     // tiempo de salida
     public bool freezeInputWhileHidden = true;
     public bool zeroNoiseWhileHidden = true;
+    private bool isTransitioning = false;
 
     // Estado
     public bool IsHidden { get; private set; }
@@ -40,9 +41,9 @@ public class PlayerHideSystem : MonoBehaviour
         controller = GetComponent<CharacterController>();
         if (!cameraTransform && Camera.main) cameraTransform = Camera.main.transform;
 
-        // autocapturar lookController si no se asignó
+        // autocapturar lookController si no se asignÃ³
         if (!lookController)
-            lookController = GetComponentInChildren<MonoBehaviour>(); // si tienes un FPSLook en el hijo/cámara
+            lookController = GetComponentInChildren<MonoBehaviour>(); // si tienes un FPSLook en el hijo/cÃ¡mara
     }
 
     public bool IsPlayerCrouching()
@@ -52,7 +53,7 @@ public class PlayerHideSystem : MonoBehaviour
 
     public void EnterHide(HideSpot spot)
     {
-        if (!spot || !spot.hidePoint || IsHidden) return;
+        if (!spot || !spot.hidePoint || IsHidden || isTransitioning) return;
 
         StopAllCoroutines();
         StartCoroutine(DoEnterHide(spot));
@@ -60,14 +61,17 @@ public class PlayerHideSystem : MonoBehaviour
 
     public void ExitHide()
     {
-        if (!IsHidden) return;
+        if (!IsHidden || isTransitioning) return;
 
         StopAllCoroutines();
         StartCoroutine(DoExitHide());
     }
 
+
     IEnumerator DoEnterHide(HideSpot spot)
     {
+        isTransitioning = true;  // ðŸ”’ Bloqueamos input
+
         CurrentSpot = spot;
 
         // Guardar estado
@@ -98,7 +102,7 @@ public class PlayerHideSystem : MonoBehaviour
         if (freezeLookWhileHidden && lookController)
             lookController.enabled = false;
 
-        // Mover al jugador/cámara suavemente al hidePoint
+        // Mover al jugador/cÃ¡mara suavemente al hidePoint
         Vector3 startPos = transform.position;
         Quaternion startRot = transform.rotation;
 
@@ -121,13 +125,15 @@ public class PlayerHideSystem : MonoBehaviour
         transform.rotation = targetRot;
 
         if (controller) controller.enabled = ccState;
-
         IsHidden = true;
+        isTransitioning = false; // ðŸ”“ Desbloqueamos al terminar
     }
 
     IEnumerator DoExitHide()
     {
-        // Restaurar entrada/ruido/linterna luego de la transición
+        isTransitioning = true;  // ðŸ”’ Bloqueamos input
+
+        // Restaurar entrada/ruido/linterna luego de la transiciÃ³n
         Vector3 fromPos = transform.position;
         Quaternion fromRot = transform.rotation;
 
@@ -151,7 +157,7 @@ public class PlayerHideSystem : MonoBehaviour
 
         if (controller) controller.enabled = ccState;
 
-        // Restaurar cámara local
+        // Restaurar cÃ¡mara local
         if (cameraTransform)
         {
             cameraTransform.localPosition = savedCamLocalPos;
@@ -174,7 +180,8 @@ public class PlayerHideSystem : MonoBehaviour
         IsHidden = false;
         CurrentSpot = null;
 
-        // Ocultar prompt si seguía visible
         HideUI.Instance?.Show(false);
+        isTransitioning = false; // ðŸ”“ Desbloqueamos al terminar
+        isTransitioning = false; // ðŸ”“ Desbloqueamos al terminar
     }
 }
