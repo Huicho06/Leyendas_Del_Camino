@@ -1,6 +1,6 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Playables;
-using System.Collections.Generic;
 
 public class SceneTrigger : MonoBehaviour
 {
@@ -13,6 +13,10 @@ public class SceneTrigger : MonoBehaviour
 
     [Header("Opcional: silenciar audio durante la animación")]
     public bool muteAudioDuringCinematic = true;
+
+    [Header("Opcional: cambiar de escena al finalizar la animación")]
+    public bool changeSceneOnEnd = false;
+    [SerializeField] private string sceneToLoad = ConstantGames.BENI; // Puedes cambiar el valor por defecto
 
     bool triggered = false;
 
@@ -36,9 +40,7 @@ public class SceneTrigger : MonoBehaviour
 
             // Silencia audio si está activado
             if (muteAudioDuringCinematic)
-            {
                 MuteAllAudio();
-            }
 
             // Reproduce Timeline
             director.Play();
@@ -54,14 +56,24 @@ public class SceneTrigger : MonoBehaviour
 
         // Cierra el canvas si está asignado
         if (canvasToClose != null)
-        {
             canvasToClose.SetActive(false);
-        }
 
         // Restaura audio
         if (muteAudioDuringCinematic)
-        {
             RestoreAudio();
+
+        // Cambia de escena si está activado
+        if (changeSceneOnEnd && !string.IsNullOrEmpty(sceneToLoad))
+        {
+            // Usa tu sistema de carga con pantalla de carga
+            if (LoaderScene.Instance != null)
+            {
+                LoaderScene.Instance.LoadSceneString(sceneToLoad);
+            }
+            else
+            {
+                Debug.LogError("No existe una instancia activa de LoaderScene en la escena.");
+            }
         }
 
         director.stopped -= OnTimelineEnd;
@@ -69,7 +81,6 @@ public class SceneTrigger : MonoBehaviour
 
     void MuteAllAudio()
     {
-        // AudioSources
         audioSources.Clear();
         audioSourcesStates.Clear();
         foreach (var source in FindObjectsOfType<AudioSource>())
@@ -79,7 +90,6 @@ public class SceneTrigger : MonoBehaviour
             source.enabled = false;
         }
 
-        // AudioListeners
         audioListeners.Clear();
         audioListenersStates.Clear();
         foreach (var listener in FindObjectsOfType<AudioListener>())
