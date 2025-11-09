@@ -9,5 +9,4 @@ public static class ConstantGames
     public const string LAPAZ = "La paz";
     public const string SCENE1 = "Scene1";
     public const string TRNASICION = "Transision";
-    public const string YUNGAS = "Yungas";
 }

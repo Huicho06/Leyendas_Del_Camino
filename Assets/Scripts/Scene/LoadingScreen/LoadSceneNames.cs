@@ -20,10 +20,6 @@ public class LoadSceneNames : MonoBehaviour
     {
         LoaderScene.Instance.LoadSceneString(ConstantGames.TRNASICION);
     }
-    public void SceneYungas()
-    {
-        LoaderScene.Instance.LoadSceneString(ConstantGames.YUNGAS);
-    }
     public void QuitGame()
     {
         Application.Quit();
