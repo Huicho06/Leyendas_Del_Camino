@@ -3151,43 +3151,47 @@ PrefabInstance:
       objectReference: {fileID: 8300000, guid: 24d537ff23c8d9640a5f4d600cb8aec8, type: 3}
     - target: {fileID: 4396484015342754779, guid: 74d98652269ba03498faa8f8b6d5a15a, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 506.56
+      value: 506.64346
       objectReference: {fileID: 0}
     - target: {fileID: 4396484015342754779, guid: 74d98652269ba03498faa8f8b6d5a15a, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 382.67
+      value: 382.07
       objectReference: {fileID: 0}
     - target: {fileID: 4396484015342754779, guid: 74d98652269ba03498faa8f8b6d5a15a, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 14.49
+      value: 14.14661
       objectReference: {fileID: 0}
     - target: {fileID: 4396484015342754779, guid: 74d98652269ba03498faa8f8b6d5a15a, type: 3}
       propertyPath: m_LocalRotation.w
-      value: 0.9633998
+      value: 0.95570755
       objectReference: {fileID: 0}
     - target: {fileID: 4396484015342754779, guid: 74d98652269ba03498faa8f8b6d5a15a, type: 3}
       propertyPath: m_LocalRotation.x
-      value: -0
+      value: 0.13519038
       objectReference: {fileID: 0}
     - target: {fileID: 4396484015342754779, guid: 74d98652269ba03498faa8f8b6d5a15a, type: 3}
       propertyPath: m_LocalRotation.y
-      value: -0.2680689
+      value: -0.26140884
       objectReference: {fileID: 0}
     - target: {fileID: 4396484015342754779, guid: 74d98652269ba03498faa8f8b6d5a15a, type: 3}
       propertyPath: m_LocalRotation.z
-      value: -0
+      value: -0.0034778793
       objectReference: {fileID: 0}
     - target: {fileID: 4396484015342754779, guid: 74d98652269ba03498faa8f8b6d5a15a, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
+      value: 14.868
       objectReference: {fileID: 0}
     - target: {fileID: 4396484015342754779, guid: 74d98652269ba03498faa8f8b6d5a15a, type: 3}
       propertyPath: m_LocalEulerAnglesHint.y
-      value: -31.099
+      value: -31.194
       objectReference: {fileID: 0}
     - target: {fileID: 4396484015342754779, guid: 74d98652269ba03498faa8f8b6d5a15a, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
+      value: -4.589
+      objectReference: {fileID: 0}
+    - target: {fileID: 5901109394906353910, guid: 74d98652269ba03498faa8f8b6d5a15a, type: 3}
+      propertyPath: MinDistance
+      value: 1.4535828
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -3367,7 +3371,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 18673367fd4970e4db826eeaa19f7d1a, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 345.33
+      value: 338.9
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 18673367fd4970e4db826eeaa19f7d1a, type: 3}
       propertyPath: m_LocalPosition.z
@@ -3854,9 +3858,9 @@ CapsuleCollider:
   m_Enabled: 1
   serializedVersion: 2
   m_Radius: 0.5
-  m_Height: 1.9824189
+  m_Height: 1.8161464
   m_Direction: 1
-  m_Center: {x: 0, y: -2.885388, z: 0}
+  m_Center: {x: 0, y: 0.8377393, z: 0}
 --- !u!114 &1454397666
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3881,7 +3885,7 @@ MonoBehaviour:
   shoutClip: {fileID: 0}
   playOnApproach: 1
   hearingDistance: 600
-  detectionDistance: 600
+  detectionDistance: 30
   detectionAnimationDelay: 2
   agent: {fileID: 0}
   wanderRadius: 12
