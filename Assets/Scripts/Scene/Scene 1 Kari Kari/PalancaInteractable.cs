@@ -1,12 +1,10 @@
-﻿using TMPro;
-using UnityEngine;
+﻿using UnityEngine;
 
 [RequireComponent(typeof(Collider))]
 public class PalancaInteractable : MonoBehaviour
 {
     [Header("Referencias")]
-    public PalancaLuzAnimada palanca;    // arrastra aquí el script PalancaLuzAnimada
-    public TMP_Text promptText;          // texto de interacción
+    public PalancaLuzAnimada palanca;
 
     private bool playerNearby = false;
 
@@ -14,18 +12,10 @@ public class PalancaInteractable : MonoBehaviour
     {
         var col = GetComponent<Collider>();
         col.isTrigger = true;
-        if (promptText)
-        {
-            promptText.gameObject.SetActive(false);
-            ActualizarTexto(); // Asegura texto coherente desde el inicio
-        }
 
         if (palanca != null)
-        {
-            palanca.encendida = false; // Forzar apagado al inicio
-        }
+            palanca.encendida = false;
     }
-
 
     void Update()
     {
@@ -37,7 +27,7 @@ public class PalancaInteractable : MonoBehaviour
             if (palanca != null)
             {
                 palanca.Activar();
-                ActualizarTexto(); // actualiza el texto después del cambio
+                ActualizarTexto();
             }
         }
     }
@@ -47,11 +37,7 @@ public class PalancaInteractable : MonoBehaviour
         if (!other.CompareTag("Player")) return;
 
         playerNearby = true;
-        if (promptText && !NoteInteraction.isReadingNote)
-        {
-            promptText.gameObject.SetActive(true);
-            ActualizarTexto();
-        }
+        ActualizarTexto();
     }
 
     void OnTriggerExit(Collider other)
@@ -59,14 +45,13 @@ public class PalancaInteractable : MonoBehaviour
         if (!other.CompareTag("Player")) return;
 
         playerNearby = false;
-        if (promptText) promptText.gameObject.SetActive(false);
+        PromptManager.instance.HidePrompt();
     }
 
     void ActualizarTexto()
     {
-        if (promptText == null || palanca == null) return;
+        if (palanca == null || NoteInteraction.isReadingNote) return;
 
-        // Si la palanca está bloqueada (todas las luces fueron tocadas) → mensaje especial
         bool todasBloqueadas = true;
         foreach (var luz in palanca.lucesObjetivo)
         {
@@ -79,15 +64,15 @@ public class PalancaInteractable : MonoBehaviour
 
         if (todasBloqueadas)
         {
-            promptText.text = "Las luces dejaron de funcionar";
+            PromptManager.instance.ShowPrompt("Las luces dejaron de funcionar");
         }
         else if (palanca.EstadoEncendido)
         {
-            promptText.text = "[E] Apagar luces";
+            PromptManager.instance.ShowPrompt("[E] Apagar luces");
         }
         else
         {
-            promptText.text = "[E] Encender luces";
+            PromptManager.instance.ShowPrompt("[E] Encender luces");
         }
     }
 }
