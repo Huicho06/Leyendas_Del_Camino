@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1 &8144781455323941629
+--- !u!1 &7638657954918694072
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -8,50 +8,50 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 5512007881307130979}
-  - component: {fileID: 7336981488250363311}
-  - component: {fileID: 6498242518547066390}
-  - component: {fileID: 4791361023628710514}
-  - component: {fileID: 3829418210152099326}
-  - component: {fileID: 63617142699038744}
+  - component: {fileID: 8421378395364474348}
+  - component: {fileID: 6596360244762811204}
+  - component: {fileID: 1026630778600962358}
+  - component: {fileID: 8443417839643458704}
+  - component: {fileID: 5365209132935326390}
+  - component: {fileID: 6855774333340302694}
   m_Layer: 0
-  m_Name: Tubo
+  m_Name: Tubo (1)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &5512007881307130979
+--- !u!4 &8421378395364474348
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8144781455323941629}
+  m_GameObject: {fileID: 7638657954918694072}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.7028795, y: -0, z: -0, w: 0.7113091}
-  m_LocalPosition: {x: 1.4233456, y: 0.591, z: -7.223}
+  m_LocalRotation: {x: 0.7071068, y: 0, z: 0, w: 0.7071068}
+  m_LocalPosition: {x: 1.4233456, y: 0.6, z: -6.484}
   m_LocalScale: {x: 0.26584724, y: 0.34172794, z: 0.25172022}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 5707278062275006018}
+  - {fileID: 6275663226905529239}
   m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 89.318, y: 0, z: 0}
---- !u!33 &7336981488250363311
+  m_LocalEulerAnglesHint: {x: 90, y: 0, z: 0}
+--- !u!33 &6596360244762811204
 MeshFilter:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8144781455323941629}
+  m_GameObject: {fileID: 7638657954918694072}
   m_Mesh: {fileID: 10206, guid: 0000000000000000e000000000000000, type: 0}
---- !u!23 &6498242518547066390
+--- !u!23 &1026630778600962358
 MeshRenderer:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8144781455323941629}
+  m_GameObject: {fileID: 7638657954918694072}
   m_Enabled: 0
   m_CastShadows: 1
   m_ReceiveShadows: 1
@@ -65,7 +65,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: f32262b6d2f5a5e40ac17fbab8970c64, type: 2}
+  - {fileID: 2100000, guid: 290da832e6ba3364e8e4ed5c7ee2565a, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -87,13 +87,13 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!136 &4791361023628710514
+--- !u!136 &8443417839643458704
 CapsuleCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8144781455323941629}
+  m_GameObject: {fileID: 7638657954918694072}
   m_Material: {fileID: 0}
   m_IncludeLayers:
     serializedVersion: 2
@@ -110,55 +110,43 @@ CapsuleCollider:
   m_Height: 2
   m_Direction: 1
   m_Center: {x: 0.000000059604645, y: 0, z: -0.00000008940697}
---- !u!114 &3829418210152099326
+--- !u!114 &5365209132935326390
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8144781455323941629}
+  m_GameObject: {fileID: 7638657954918694072}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d88651a01f025e4449a1f9903c062add, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   itemType: 0
-  itemID: Tubo_01
-  pickupClip: {fileID: 8300000, guid: 570f4c9f124d3ca4cb26696ae8ebfa23, type: 3}
+  itemID: Tubo_02
+  pickupClip: {fileID: 8300000, guid: c47b88041209f8a44930fec224cb5de9, type: 3}
   volumen: 0.8
---- !u!114 &63617142699038744
+--- !u!114 &6855774333340302694
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8144781455323941629}
+  m_GameObject: {fileID: 7638657954918694072}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 32752817cd5a4c542aaa4c64b041cef3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   highlightMat: {fileID: 2100000, guid: 2b44a7bf4bfb68a489e4ccc93b633d64, type: 2}
---- !u!1001 &5241884670302710185
+--- !u!1001 &5808828819965144188
 PrefabInstance:
   m_ObjectHideFlags: 0
   serializedVersion: 2
   m_Modification:
     serializedVersion: 3
-    m_TransformParent: {fileID: 5512007881307130979}
+    m_TransformParent: {fileID: 8421378395364474348}
     m_Modifications:
-    - target: {fileID: -8679921383154817045, guid: e23c345e1a16b1e4e98ea5b5879f243e, type: 3}
-      propertyPath: m_LocalScale.x
-      value: 1.026163
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: e23c345e1a16b1e4e98ea5b5879f243e, type: 3}
-      propertyPath: m_LocalScale.y
-      value: 1.0139892
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: e23c345e1a16b1e4e98ea5b5879f243e, type: 3}
-      propertyPath: m_LocalScale.z
-      value: 1.0708557
-      objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: e23c345e1a16b1e4e98ea5b5879f243e, type: 3}
       propertyPath: m_LocalPosition.x
       value: -0
@@ -202,7 +190,7 @@ PrefabInstance:
     - target: {fileID: -7635826562936255635, guid: e23c345e1a16b1e4e98ea5b5879f243e, type: 3}
       propertyPath: m_Materials.Array.data[0]
       value: 
-      objectReference: {fileID: 2100000, guid: 290da832e6ba3364e8e4ed5c7ee2565a, type: 2}
+      objectReference: {fileID: 2100000, guid: e280847578adce246ba1f3887866657d, type: 2}
     - target: {fileID: 919132149155446097, guid: e23c345e1a16b1e4e98ea5b5879f243e, type: 3}
       propertyPath: m_Name
       value: A_realistic_front_vie_1108203436_texture
@@ -212,8 +200,8 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: e23c345e1a16b1e4e98ea5b5879f243e, type: 3}
---- !u!4 &5707278062275006018 stripped
+--- !u!4 &6275663226905529239 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: e23c345e1a16b1e4e98ea5b5879f243e, type: 3}
-  m_PrefabInstance: {fileID: 5241884670302710185}
+  m_PrefabInstance: {fileID: 5808828819965144188}
   m_PrefabAsset: {fileID: 0}
