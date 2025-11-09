@@ -27,13 +27,13 @@ public class ParedDeTubosManager : MonoBehaviour
         {
             if (pared == null)
             {
-                Debug.LogWarning("⚠️ Hay una pared sin asignar en el manager.");
+                Debug.LogWarning(" Hay una pared sin asignar en el manager.");
                 return;
             }
 
             if (!pared.TieneTubo())
             {
-                Debug.Log("⏳ Aún faltan tubos por colocar...");
+                Debug.Log(" Aún faltan tubos por colocar...");
                 return;
             }
         }
@@ -44,7 +44,7 @@ public class ParedDeTubosManager : MonoBehaviour
 
     private void AbrirPuerta()
     {
-        Debug.Log("🚪 ¡Todos los tubos colocados! La puerta se abre.");
+        Debug.Log(" ¡Todos los tubos colocados! La puerta se abre.");
 
         if (puerta != null)
             puerta.SetActive(false);
