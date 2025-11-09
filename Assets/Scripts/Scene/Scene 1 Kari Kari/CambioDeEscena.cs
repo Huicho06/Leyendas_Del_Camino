@@ -12,7 +12,7 @@ public class CambioDeEscenaPorTrigger : MonoBehaviour
     private void Start()
     {
         var col = GetComponent<Collider>();
-        col.isTrigger = true; // asegúrate de que el collider sea trigger
+        col.isTrigger = true; // asegurarse de que sea trigger
     }
 
     private void OnTriggerEnter(Collider other)
@@ -20,9 +20,21 @@ public class CambioDeEscenaPorTrigger : MonoBehaviour
         if (other.CompareTag(tagJugador))
         {
             if (!string.IsNullOrEmpty(nombreEscenaDestino))
-                SceneManager.LoadScene(nombreEscenaDestino);
+            {
+                // Verifica que LoaderScene esté disponible en la escena
+                if (LoaderScene.Instance != null)
+                {
+                    LoaderScene.Instance.LoadSceneString(nombreEscenaDestino);
+                }
+                else
+                {
+                    Debug.LogError("No existe un objeto con el script LoaderScene en la escena.");
+                }
+            }
             else
+            {
                 Debug.LogWarning("No se asignó una escena destino en el inspector.");
+            }
         }
     }
 }

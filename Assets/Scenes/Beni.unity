@@ -6141,6 +6141,73 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1561879259}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!4 &1573347408 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 3927365656204608603, guid: 77bd1dc33ec9a2d488443e5fe3d8a8ff, type: 3}
+  m_PrefabInstance: {fileID: 2130752481}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1001 &1632878946
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 1573347408}
+    m_Modifications:
+    - target: {fileID: 1581949618799540494, guid: c9732ca37cc62964e87e7b243d04538d, type: 3}
+      propertyPath: m_Name
+      value: hazme_una_linterna_1021130939_texture
+      objectReference: {fileID: 0}
+    - target: {fileID: 2215742873417819060, guid: c9732ca37cc62964e87e7b243d04538d, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2215742873417819060, guid: c9732ca37cc62964e87e7b243d04538d, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2215742873417819060, guid: c9732ca37cc62964e87e7b243d04538d, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2215742873417819060, guid: c9732ca37cc62964e87e7b243d04538d, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 0.7071068
+      objectReference: {fileID: 0}
+    - target: {fileID: 2215742873417819060, guid: c9732ca37cc62964e87e7b243d04538d, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2215742873417819060, guid: c9732ca37cc62964e87e7b243d04538d, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2215742873417819060, guid: c9732ca37cc62964e87e7b243d04538d, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0.7071068
+      objectReference: {fileID: 0}
+    - target: {fileID: 2215742873417819060, guid: c9732ca37cc62964e87e7b243d04538d, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2215742873417819060, guid: c9732ca37cc62964e87e7b243d04538d, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2215742873417819060, guid: c9732ca37cc62964e87e7b243d04538d, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 90
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: c9732ca37cc62964e87e7b243d04538d, type: 3}
+--- !u!4 &1632878947 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 2215742873417819060, guid: c9732ca37cc62964e87e7b243d04538d, type: 3}
+  m_PrefabInstance: {fileID: 1632878946}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1644463218
 GameObject:
   m_ObjectHideFlags: 0
@@ -7780,6 +7847,10 @@ PrefabInstance:
       propertyPath: MinDistance
       value: 1.6149249
       objectReference: {fileID: 0}
+    - target: {fileID: 2547045475919213489, guid: 77bd1dc33ec9a2d488443e5fe3d8a8ff, type: 3}
+      propertyPath: m_Enabled
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 2689585667227644289, guid: 77bd1dc33ec9a2d488443e5fe3d8a8ff, type: 3}
       propertyPath: m_LocalPosition.x
       value: -75.9
@@ -7918,6 +7989,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 3231747105013452282, guid: 77bd1dc33ec9a2d488443e5fe3d8a8ff, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1386990680}
+    - targetCorrespondingSourceObject: {fileID: 3927365656204608603, guid: 77bd1dc33ec9a2d488443e5fe3d8a8ff, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1632878947}
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 6293458064112367192, guid: 77bd1dc33ec9a2d488443e5fe3d8a8ff, type: 3}
       insertIndex: -1
