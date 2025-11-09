@@ -1,4 +1,6 @@
-﻿using System.Collections;
+﻿
+using System.Collections;
+
 using UnityEngine;
 using UnityEngine.AI;
 using UnityEngine.SceneManagement;
@@ -53,9 +55,10 @@ public class SilbonAI : MonoBehaviour
     public float crouchAgroDropDelay = 0.35f;
 
     [Header("Retorno a patrulla")]
-    public float returnToPatrolDelay = 3f;   // si no hay estímulos, vuelve a patrullar
+    public float returnToPatrolDelay = 3f; // si no hay estímulos, vuelve a patrullar
 
     private NavMeshAgent agent;
+    private Animator animator;
     private int patrolIndex = 0;
 
     private enum State { Patrolling, Investigating, Chasing }
@@ -82,6 +85,7 @@ public class SilbonAI : MonoBehaviour
     void Awake()
     {
         agent = GetComponent<NavMeshAgent>();
+        animator = GetComponent<Animator>();
 
         if (!player)
         {
@@ -138,6 +142,10 @@ public class SilbonAI : MonoBehaviour
     {
         if (!agent) return;
 
+        // Actualiza la animación según si está caminando
+        bool isWalking = agent.velocity.magnitude > 0.1f && agent.remainingDistance > agent.stoppingDistance;
+        if (animator) animator.SetBool("isWalking", isWalking);
+
         // 🔪 Kill por proximidad
         if (player && Vector3.Distance(transform.position, player.position) <= proximityKillRange)
             StartCoroutine(KillPlayer());
@@ -164,7 +172,7 @@ public class SilbonAI : MonoBehaviour
         // --------------------------------------------
         if (!los && NoiseManager.Instance != null &&
             NoiseManager.Instance.GetMostRecentNoise(transform.position, hearingRange, hearingThreshold,
-                                                     out Vector3 pos, out int noiseId))
+                out Vector3 pos, out int noiseId))
         {
             if (noiseId != currentTargetNoiseId)
             {
