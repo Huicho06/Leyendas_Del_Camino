@@ -6448,9 +6448,9 @@ MonoBehaviour:
   - {fileID: 592505684}
   - {fileID: 1279650534}
   - {fileID: 1851331750}
-  patrolWait: 1.5
-  patrolSpeed: 3.5
-  investigateSpeed: 4.5
+  patrolWait: 5
+  patrolSpeed: 4
+  investigateSpeed: 5
   hearingRange: 40
   hearingThreshold: 3.98
   investigateTime: 4
