@@ -6392,6 +6392,118 @@ MonoBehaviour:
   noteUI: {fileID: 227988517}
   noteText: {fileID: 782312045}
   noteImage: {fileID: 1753301243}
+--- !u!1 &505254103
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 505254105}
+  - component: {fileID: 505254104}
+  - component: {fileID: 505254106}
+  m_Layer: 0
+  m_Name: CambiarScena
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 0
+--- !u!65 &505254104
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 505254103}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.027069192, y: 0.034833893, z: 0.050958347}
+  m_Center: {x: -0.4864643, y: -0.48258412, z: 0.3274663}
+--- !u!4 &505254105
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 505254103}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: -0.6671827, z: 0, w: 0.74489415}
+  m_LocalPosition: {x: 149.7, y: 94.7, z: 140.55}
+  m_LocalScale: {x: 194.00371, y: 194.00371, z: 194.00371}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: -83.7, z: 0}
+--- !u!114 &505254106
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 505254103}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ad748bccb837cbe4aa60a7365e228fa9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  nombreEscenaDestino: Yungas
+  tagJugador: Player
+--- !u!1 &531213157
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 531213159}
+  - component: {fileID: 531213158}
+  m_Layer: 0
+  m_Name: LoaderScene
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &531213158
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 531213157}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1748e4537900fc341acad4cb22706d1d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!4 &531213159
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 531213157}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0.6671827, z: 0, w: 0.74489415}
+  m_LocalPosition: {x: 138.36, y: 82.71, z: 136.63}
+  m_LocalScale: {x: 194.00372, y: 194.00371, z: 194.00372}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &532218795
 GameObject:
   m_ObjectHideFlags: 0
@@ -6474,6 +6586,7 @@ MonoBehaviour:
   playableDirector: {fileID: 611290070}
   canvasToClose: {fileID: 1250225246}
   muteAudioDuringCinematic: 1
+  objetoFinalActivar: {fileID: 505254103}
 --- !u!1 &534250133
 GameObject:
   m_ObjectHideFlags: 0
@@ -27347,3 +27460,5 @@ SceneRoots:
   - {fileID: 1470961037}
   - {fileID: 193051823834427280}
   - {fileID: 464105279}
+  - {fileID: 531213159}
+  - {fileID: 505254105}
