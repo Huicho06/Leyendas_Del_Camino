@@ -190,6 +190,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: ajayu
       objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 5658bb3401c61d94996330eae2d8dfce, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 7993487680321431382, guid: 5658bb3401c61d94996330eae2d8dfce, type: 3}
       propertyPath: m_Materials.Array.size
       value: 1
@@ -3363,7 +3367,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 18673367fd4970e4db826eeaa19f7d1a, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 339.15
+      value: 345.33
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 18673367fd4970e4db826eeaa19f7d1a, type: 3}
       propertyPath: m_LocalPosition.z
@@ -3850,9 +3854,9 @@ CapsuleCollider:
   m_Enabled: 1
   serializedVersion: 2
   m_Radius: 0.5
-  m_Height: 1.7671529
+  m_Height: 1.9824189
   m_Direction: 1
-  m_Center: {x: 0, y: 0.8644515, z: 0}
+  m_Center: {x: 0, y: -2.885388, z: 0}
 --- !u!114 &1454397666
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3876,8 +3880,8 @@ MonoBehaviour:
   voiceClip: {fileID: 8300000, guid: 89f71b913d8bf78418856715e874038c, type: 3}
   shoutClip: {fileID: 0}
   playOnApproach: 1
-  hearingDistance: 1200
-  detectionDistance: 1200
+  hearingDistance: 600
+  detectionDistance: 600
   detectionAnimationDelay: 2
   agent: {fileID: 0}
   wanderRadius: 12
@@ -3905,7 +3909,7 @@ AudioSource:
   serializedVersion: 4
   OutputAudioMixerGroup: {fileID: 0}
   m_audioClip: {fileID: 8300000, guid: 89f71b913d8bf78418856715e874038c, type: 3}
-  m_PlayOnAwake: 1
+  m_PlayOnAwake: 0
   m_Volume: 1
   m_Pitch: 1
   Loop: 0
@@ -3914,8 +3918,8 @@ AudioSource:
   SpatializePostEffects: 0
   Priority: 128
   DopplerLevel: 1
-  MinDistance: 1
-  MaxDistance: 500
+  MinDistance: 400.49832
+  MaxDistance: 527.9844
   Pan2D: 0
   rolloffMode: 0
   BypassEffects: 1
