@@ -463,16 +463,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 199494022}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: bbb5cef30f83b5141ba7299c3e32f524, type: 3}
+  m_Script: {fileID: 11500000, guid: 9dcc550435d436842931b47932d19202, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  director: {fileID: 199494023}
-  cinematicCamera: {fileID: 1713186718}
-  playerCamera: {fileID: 1713186718}
+  videoPlayer: {fileID: 946942588}
   canvasToClose: {fileID: 589460705}
-  muteAudioDuringCinematic: 1
-  changeSceneOnEnd: 0
-  sceneToLoad: Beni
 --- !u!1 &233687687
 GameObject:
   m_ObjectHideFlags: 0
@@ -1120,6 +1115,11 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!328 &946942588 stripped
+VideoPlayer:
+  m_CorrespondingSourceObject: {fileID: 1362114839473374979, guid: 89c1d667742db4a479f4697823983a9c, type: 3}
+  m_PrefabInstance: {fileID: 589460704}
+  m_PrefabAsset: {fileID: 0}
 --- !u!95 &1066628378 stripped
 Animator:
   m_CorrespondingSourceObject: {fileID: 8162692661431967730, guid: 4cfa904216fcac746b99d343b67ff125, type: 3}
@@ -1911,11 +1911,6 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 1444fd6e4b20fe946858b4db98b26164, type: 3}
---- !u!1 &1713186718 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 5478299805376782443, guid: 4cfa904216fcac746b99d343b67ff125, type: 3}
-  m_PrefabInstance: {fileID: 1750020411}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &1750020411
 PrefabInstance:
   m_ObjectHideFlags: 0

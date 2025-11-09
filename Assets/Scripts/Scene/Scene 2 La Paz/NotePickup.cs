@@ -107,6 +107,7 @@ public class NotePickup : MonoBehaviour
         Time.timeScale = 1f;
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
+        Destroy(gameObject);
     }
 
     void OnTriggerEnter(Collider other)
