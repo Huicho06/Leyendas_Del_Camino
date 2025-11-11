@@ -925,6 +925,10 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 1915922968}
     - target: {fileID: 4073082302890709669, guid: b998c78648407584e83e5832a5865d24, type: 3}
+      propertyPath: hearingRange
+      value: 80
+      objectReference: {fileID: 0}
+    - target: {fileID: 4073082302890709669, guid: b998c78648407584e83e5832a5865d24, type: 3}
       propertyPath: patrolPoints.Array.size
       value: 11
       objectReference: {fileID: 0}
@@ -8557,7 +8561,7 @@ PrefabInstance:
       objectReference: {fileID: 8300000, guid: 101e49bd900d41247a0752e441409286, type: 3}
     - target: {fileID: 4396484015342754779, guid: 74d98652269ba03498faa8f8b6d5a15a, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 57.59
+      value: 27.3
       objectReference: {fileID: 0}
     - target: {fileID: 4396484015342754779, guid: 74d98652269ba03498faa8f8b6d5a15a, type: 3}
       propertyPath: m_LocalPosition.y
@@ -8565,7 +8569,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4396484015342754779, guid: 74d98652269ba03498faa8f8b6d5a15a, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 61.55
+      value: 1.7
       objectReference: {fileID: 0}
     - target: {fileID: 4396484015342754779, guid: 74d98652269ba03498faa8f8b6d5a15a, type: 3}
       propertyPath: m_LocalRotation.w
