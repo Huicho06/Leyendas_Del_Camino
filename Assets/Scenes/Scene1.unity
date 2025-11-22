@@ -15236,7 +15236,7 @@ MonoBehaviour:
   detectionRange: 40
   player: {fileID: 1024163464}
   minSpeed: 10
-  maxSpeed: 24
+  maxSpeed: 14
   footstepAudio: {fileID: 0}
   footstepClip: {fileID: 8300000, guid: 94d9cbc15b55c1144a53dd2d5ed20269, type: 3}
   footstepVolume: 0.492
@@ -15377,7 +15377,7 @@ CapsuleCollider:
     serializedVersion: 2
     m_Bits: 0
   m_LayerOverridePriority: 0
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 2
