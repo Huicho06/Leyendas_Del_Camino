@@ -16590,6 +16590,17 @@ PrefabInstance:
       insertIndex: -1
       addedObject: {fileID: 2131383857}
   m_SourcePrefab: {fileID: 100100000, guid: 77bd1dc33ec9a2d488443e5fe3d8a8ff, type: 3}
+--- !u!114 &4497880100623958065 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 8022054776044483860, guid: 77bd1dc33ec9a2d488443e5fe3d8a8ff, type: 3}
+  m_PrefabInstance: {fileID: 4497880100623958064}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1012075243}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6c47883d83e135947bc63f87126b3ec3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!114 &4622777203398586986 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 6505719891252119976, guid: e31656806269bb84c8159e68ade5922b, type: 3}
@@ -16620,6 +16631,34 @@ PrefabInstance:
     - target: {fileID: 2279187104227129541, guid: e31656806269bb84c8159e68ade5922b, type: 3}
       propertyPath: m_AnchorMax.y
       value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3087439265487239297, guid: e31656806269bb84c8159e68ade5922b, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.size
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3087439265487239297, guid: e31656806269bb84c8159e68ade5922b, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Mode
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3087439265487239297, guid: e31656806269bb84c8159e68ade5922b, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
+      value: 
+      objectReference: {fileID: 6875460753383121792}
+    - target: {fileID: 3087439265487239297, guid: e31656806269bb84c8159e68ade5922b, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_CallState
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 3087439265487239297, guid: e31656806269bb84c8159e68ade5922b, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
+      value: OnResumeButton
+      objectReference: {fileID: 0}
+    - target: {fileID: 3087439265487239297, guid: e31656806269bb84c8159e68ade5922b, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_TargetAssemblyTypeName
+      value: PauseManager, Assembly-CSharp
+      objectReference: {fileID: 0}
+    - target: {fileID: 3087439265487239297, guid: e31656806269bb84c8159e68ade5922b, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_ObjectArgumentAssemblyTypeName
+      value: UnityEngine.Object, UnityEngine
       objectReference: {fileID: 0}
     - target: {fileID: 5234318685340641316, guid: e31656806269bb84c8159e68ade5922b, type: 3}
       propertyPath: m_Pivot.x
@@ -16819,6 +16858,14 @@ PrefabInstance:
       propertyPath: flashlightController
       value: 
       objectReference: {fileID: 0}
+    - target: {fileID: 3633282346029461867, guid: 528d68095ff8487459212a7966d9f130, type: 3}
+      propertyPath: playerScripts.Array.size
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3633282346029461867, guid: 528d68095ff8487459212a7966d9f130, type: 3}
+      propertyPath: playerScripts.Array.data[0]
+      value: 
+      objectReference: {fileID: 4497880100623958065}
     - target: {fileID: 3840134420206510508, guid: 528d68095ff8487459212a7966d9f130, type: 3}
       propertyPath: m_LocalPosition.x
       value: 500
@@ -16880,6 +16927,17 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 3840134420206510508, guid: 528d68095ff8487459212a7966d9f130, type: 3}
   m_PrefabInstance: {fileID: 6875460753383121790}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &6875460753383121792 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 3633282346029461867, guid: 528d68095ff8487459212a7966d9f130, type: 3}
+  m_PrefabInstance: {fileID: 6875460753383121790}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 31c0e98c9b5980347adfb21c5516d20c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!4 &7117834317698053460 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 8557347748732862631, guid: 2272289649d9a064f931f5821164370b, type: 3}

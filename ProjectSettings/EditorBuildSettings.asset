@@ -20,7 +20,7 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/SceneLoadingScreen.unity
     guid: 49eb6a1ed35817048a6f61cba0644735
-  - enabled: 1
+  - enabled: 0
     path: Assets/Scenes/Yungas.unity
     guid: f27a464e866d94a47828c3f322ddc6ab
   - enabled: 1
